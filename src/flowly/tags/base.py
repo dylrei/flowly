@@ -25,6 +25,7 @@ class UnconfiguredObject(object):
 class CustomYamlTag(object):
     tag_name = None
     klass = None
+    klass_name = None
     base_klass = None
     mixin_klasses = None
     klass_attributes = None
@@ -42,7 +43,7 @@ class CustomYamlTag(object):
         cls._validate(node.value)
         mixin_klasses = cls.mixin_klasses or tuple()
         klass_attributes = cls.klass_attributes or dict()
-        klass_name = cls.tag_name[1:]
+        klass_name = cls.klass_name or cls.tag_name[1:]
         base_klass = cls._get_base_klass(node.value)
         klass = type(klass_name, (base_klass, *mixin_klasses), klass_attributes)
         return klass(tag=cls.tag_name, value=node.value)
