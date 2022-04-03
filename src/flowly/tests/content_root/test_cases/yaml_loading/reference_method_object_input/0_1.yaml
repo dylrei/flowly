@@ -1,0 +1,58 @@
+!META
+  doctype: method
+  domain: test_cases/yaml_loading
+  name: reference_method_object_input
+  version: 0.1
+  status: development
+
+!ALIASES
+  # a place to store reusable YAML anchors
+  - is_required: &required-string
+    data_type: string
+    required: true
+
+!INPUT
+  # if payload root node is object-shaped, specify each expected key
+  - attribute: garment_name
+    # is this actually more readable/reusable?
+    <<: *required-string
+    validators:
+      - !Validator rhymes_with_cat
+
+!BODY
+  - !Step
+    step_name: name_of_step
+    actions:
+      - !Action
+        identifier: action_identifier
+        param1: !Material value1  # actions may have side-effects on Materials passed to them
+        param2: !Asset value2  # actions receive only serialized data from a Material
+        param3: !Data value3  # scalar values stored in the Payload
+        param4: plain old text  # literal, hard-coded values
+    on_exit: continue
+  - !Step
+    step_name: name_of_second_step
+    actions: []
+    methods:
+      - !Method
+        identifier: method_identifier
+        param1: !Material value1  # actions may have side-effects on Materials passed to them
+        param2: !Asset value2  # actions receive only serialized data from a Material
+        param3: !Data value3  # scalar values stored in the Payload
+        param4: plain old text  # literal, hard-coded values
+    on_exit: wait
+
+!RETURN
+  # returning an array-shaped payload
+  - key_name: !Material value1
+    key_name2: !Asset value2
+    key_name3: !Data value3
+    key_name4: plain old text
+  - key_name: !Material value1
+    key_name2: !Asset value2
+    key_name3: !Data value3
+    key_name4: plain old text
+  - key_name: !Material value1
+    key_name2: !Asset value2
+    key_name3: !Data value3
+    key_name4: plain old text

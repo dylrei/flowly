@@ -30,3 +30,11 @@ def path_for_identifier(identifier, root_path=None):
         name=meta_info[MetaSectionKey.NAME],
         version=meta_info[MetaSectionKey.VERSION].replace('.', '_')
     )
+
+
+def identifier_for_path(*args, **kwargs):
+    msg = 'Not Implemented: identifier_for_path()' \
+          'This is being left unimplemented as an affirmative design decision. ' \
+          'Needing this function to exist should be considered a sign that you are on the Thorny Road to Sadness.' \
+          'You are urged to reconsider the path that brought you here.'
+    raise NotImplementedError(msg)
