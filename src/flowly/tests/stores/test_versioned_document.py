@@ -1,4 +1,4 @@
-from ... import get_testing_content_root
+from .. import get_testing_content_root
 from ...stores.versioned_document import VersionedDocumentStore
 
 
