@@ -22,8 +22,8 @@ class MethodExecutor(object):
 
     @property
     def meta_section(self):
-        # all values in the META section are considered strings, even if (e.g. version) they *could* be represented as floats
-        return {k: str(v) for k, v in self._method[MethodSectionName.META].items()}
+        # all values in the META section are strings, even if (e.g. version) they *could* be represented as floats
+        return {k: str(v) for k, v in self._method[MethodSectionName.META].value.items()}
 
     @property
     def input_section(self):
