@@ -18,7 +18,7 @@ class SourceOfTruth(object):
     def set(cls, key, value):
         # only names in the SOT definition are allowed
         if key not in cls.managed_names:
-            raise RuntimeError(f'Attempt to set unexpected key {key} on {self.__class__.__name__}')
+            raise RuntimeError(f'Attempt to set unexpected key {key} on {cls.__class__.__name__}')
 
         current_value = cls.managed_names[key]
         if current_value is None:
