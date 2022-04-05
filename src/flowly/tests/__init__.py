@@ -1,5 +1,7 @@
-import os
+from ..namespacing.root import ContentRoot
 
+# package tests may only interact with content in or below the tests/ directory
+ContentRoot(__name__)
 
-def get_testing_content_root():
-    return f'{os.getcwd()}/src/flowly/tests/content_root'
+def import_target():
+    pass
