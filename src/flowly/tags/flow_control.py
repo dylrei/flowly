@@ -1,5 +1,5 @@
-from .base import KeywordConfiguredTag
+from .base import ObjectTag
 
 
-class StepTag(KeywordConfiguredTag):
+class StepTag(ObjectTag):
     tag_name = '!Step'

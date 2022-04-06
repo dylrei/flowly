@@ -1,25 +1,41 @@
-class ScalarConfiguredObject(object):
-    def __init__(self, tag, value):
+def value_unpacker(value):
+    if is_mapping(value):
+        if isinstance(value, list):
+            # a list of key-value tuples
+            return {k.value: value_unpacker(v.value) for k, v in value}
+        return {k: value_unpacker(v.value) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [value_unpacker(v.value) for v in value]
+    elif hasattr(value, 'value'):
+        return value.value
+    elif value in ['true', 'on']:
+        return True
+    elif value in ['false', 'off']:
+        return False
+    else:
+        return value
+
+def is_mapping(value):
+    if isinstance(value, dict):
+        return True
+    if hasattr(value, '__iter__'):
+        return {type(item) for item in value} == set([type(('a',))])
+
+
+class TagGeneratedObject(object):
+    def __init__(self, tag, node):
         self.tag = tag
-        self.value = value
+        # not exposing a public "value" attribute prevents further recursive yaml processing, leaving this object
+        # in place of the node
+        self._value = value_unpacker(node.value)
 
 
-class KeywordConfiguredObject(object):
-    def __init__(self, tag, value):
+class TagDescribedData(object):
+    def __init__(self, tag, node):
         self.tag = tag
-        self.value = {k.value: v.value for k, v in value}
-
-
-class SequenceConfiguredObject(object):
-    def __init__(self, tag, value):
-        self.tag = tag
-        self.value = [item.value for item in value]
-
-
-class UnconfiguredObject(object):
-    def __init__(self, tag, *args, **kwargs):
-        # value is set via klass_attributes
-        self.tag = tag
+        # setting self.value means that yaml loading will treat this object like an array or object data structure,
+        # a name we gave to a collection of other values
+        self.value = value_unpacker(node.value)
 
 
 class CustomYamlTag(object):
@@ -46,42 +62,15 @@ class CustomYamlTag(object):
         klass_name = cls.klass_name or cls.tag_name[1:]
         base_klass = cls._get_base_klass(node.value)
         klass = type(klass_name, (base_klass, *mixin_klasses), klass_attributes)
-        return klass(tag=cls.tag_name, value=node.value)
+        return klass(tag=cls.tag_name, node=node)
 
     @classmethod
     def representer(self):
         raise NotImplementedError('TBD')
 
 
-class ScalarConfiguredTag(CustomYamlTag):
-    base_klass = ScalarConfiguredObject
-    constrain_values = None
+class LabelTag(CustomYamlTag):
+    base_klass = TagDescribedData
 
-    @classmethod
-    def _validate(cls, value):
-        if cls.constrain_values is not None:
-            if value not in cls.constrain_values:
-                raise RuntimeError(f'Invalid value for {cls.tag_name} tag: {value}')
-
-
-class KeywordConfiguredTag(CustomYamlTag):
-    base_klass = KeywordConfiguredObject
-
-
-class SequenceConfiguredTag(CustomYamlTag):
-    base_klass = SequenceConfiguredObject
-
-
-class PayloadConfiguredTag(CustomYamlTag):
-    # a payload root node may be either array-shaped or object-shaped
-    @classmethod
-    def _get_base_klass(cls, value):
-        # is this a list of scalars or a list of key-value tuples?
-        if {type(item) for item in value} == set([type(('a',))]):
-            return KeywordConfiguredObject
-        else:
-            return SequenceConfiguredObject
-
-
-class UnconfiguredTag(CustomYamlTag):
-    base_klass = UnconfiguredObject
+class ObjectTag(CustomYamlTag):
+    base_klass = TagGeneratedObject

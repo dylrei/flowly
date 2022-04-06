@@ -1,5 +1,6 @@
-from ...constants.tags import MethodSectionName
-from ...tags.loader import load_yaml
+from ...constants.context import DocumentLoaderContext
+from ...constants.document import DocumentSectionName
+from ...tags.loader import load_yaml_document
 
 
 sample_yaml = '''
@@ -42,10 +43,11 @@ sample_yaml = '''
 '''
 
 def test_load_yaml():
-    result = load_yaml(sample_yaml)
+    result = load_yaml_document(sample_yaml, context=DocumentLoaderContext.METHOD)
 
     # note: we don't expect to get the "ALIASES" section, that's stripped out
-    expected_keys = [MethodSectionName.META, MethodSectionName.INPUT, MethodSectionName.BODY, MethodSectionName.RETURN]
+    expected_keys = [DocumentSectionName.META, DocumentSectionName.INPUT, DocumentSectionName.BODY,
+                     DocumentSectionName.RETURN]
 
     # sanity comparison - is this right type and shape of stuff we're expecting?
     assert isinstance(result, dict) is True

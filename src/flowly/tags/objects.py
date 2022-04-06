@@ -1,13 +1,13 @@
-from .base import ScalarConfiguredTag
+from .base import ObjectTag
 
 
-class MaterialTag(ScalarConfiguredTag):
+class MaterialTag(ObjectTag):
     tag_name = '!Material'
 
 
-class AssetTag(ScalarConfiguredTag):
+class AssetTag(ObjectTag):
     tag_name = '!Asset'
 
 
-class DataTag(ScalarConfiguredTag):
+class DataTag(ObjectTag):
     tag_name = '!Data'
