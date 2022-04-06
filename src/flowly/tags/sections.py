@@ -1,37 +1,32 @@
-from .base import SequenceConfiguredTag, PayloadConfiguredTag, KeywordConfiguredTag
+from .base import LabelTag
 
-
-class Section(object):
-    def __init__(self, tag, value):
-        self.tag = tag
-        self.contents = value
 
 # Keyword-configured tags
 # =========================
-class MetaSectionTag(KeywordConfiguredTag):
+class MetaSectionTag(LabelTag):
     tag_name = '!META'
     klass_name = 'MetaSection'
 
 
 # Sequence-configured tags
 # =========================
-class BodySectionTag(SequenceConfiguredTag):
+class BodySectionTag(LabelTag):
     tag_name = '!BODY'
     klass_name = 'BodySection'
 
 
-class AliasesSectionTag(SequenceConfiguredTag):
+class AliasesSectionTag(LabelTag):
     tag_name = '!ALIASES'
     klass_name = 'AliasesSection'
 
 
 # Payload-configured tags
 # =========================
-class InputSectionTag(PayloadConfiguredTag):
+class InputSectionTag(LabelTag):
     tag_name = '!INPUT'
     klass_name = 'InputSection'
 
 
-class ReturnSectionTag(PayloadConfiguredTag):
+class ReturnSectionTag(LabelTag):
     tag_name = '!RETURN'
     klass_name = 'ReturnSection'

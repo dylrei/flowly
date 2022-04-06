@@ -9,6 +9,6 @@ class MetaSectionKey(ConstantNamespace):
     STATUS = 'status'
 
 
-class IdentifierDelimeter(ConstantNamespace):
+class IdentityDelimeter(ConstantNamespace):
     DOMAIN = '::'
     VERSION = '=='
