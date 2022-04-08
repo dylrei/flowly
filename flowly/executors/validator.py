@@ -62,15 +62,6 @@ def _validate_scalar(spec_part, data_part):
         raise NotImplementedError(f'No validation handling implemented for data_type {expected_data_type}')
     if validation_failure:
         raise RuntimeError(f'Expected {expected_data_type}, got: {data_part} (type: {type(data_part)})')
-    #
-    # additional_validator = spec.get(YamlKeyword.VALIDATOR)
-    # if additional_validator:
-    #     # TODO: import permitted_validators from folder configured in payload_validator.ini
-    #     from .example.validators import permitted_validators
-    #     if additional_validator not in permitted_validators:
-    #         raise RuntimeError(f'Attempting to use custom validator, but validator name is not registered in '
-    #                            f'`permitted_validators`; Name: {additional_validator}')
-    #     permitted_validators[additional_validator](data)
 
 
 def _validate_list(spec_part, data_part):
