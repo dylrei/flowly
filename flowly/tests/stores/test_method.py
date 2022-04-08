@@ -10,6 +10,7 @@ def test_method_store():
     expected_meta_section_v1 = {
         MetaSectionKey.DOMAIN: 'test_cases/document_loading',
         MetaSectionKey.NAME: 'sample_versioned_method',
+        # version is always a string, even if it *could* be represented as a float/int
         MetaSectionKey.VERSION: '1.0',
         MetaSectionKey.STATUS: DocumentStatus.TESTING,
     }

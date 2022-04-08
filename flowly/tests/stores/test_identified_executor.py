@@ -3,26 +3,26 @@ from ...stores.identified_executor import IdentifiedExecutorStore
 
 
 def test_store_happy_path():
-    this_domain = __name__.replace('/', '.')
+    this_domain = '/'.join(__name__.split('/')[:-1])
     first_version = '1.1'
     second_version = '1.2'
 
-    @identified_executor(f'{this_domain}::test_fx@@{first_version}')
+    @identified_executor(f'{this_domain}::test_identified_executor=={first_version}')
     def some_fx(x):
         return x + 5
 
-    @identified_executor(f'{this_domain}::test_fx@@{second_version}')
+    @identified_executor(f'{this_domain}::test_identified_executor=={second_version}')
     def some_other_version(x):
         return x + 25
 
     arg = 10
-    assert IdentifiedExecutorStore.use(f'{this_domain}::test_fx@@{first_version}')(arg) == some_fx(arg)
-    assert IdentifiedExecutorStore.use(f'{this_domain}::test_fx@@{second_version}')(arg) == some_other_version(arg)
+    assert IdentifiedExecutorStore.use(f'{this_domain}::test_identified_executor=={first_version}')(arg) == some_fx(arg)
+    assert IdentifiedExecutorStore.use(f'{this_domain}::test_identified_executor=={second_version}')(arg) == some_other_version(arg)
 
 
 def test_store_fail_path():
     try:
-        @identified_executor('bogus/path::test_fx@@1.1')
+        @identified_executor('bogus/path::test_fx==1.1')
         def some_fx(x):
             return x + 5
         success = True

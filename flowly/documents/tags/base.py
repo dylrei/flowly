@@ -2,28 +2,21 @@ import yaml
 
 
 class YAMLConfiguredObject(object):
-    def __init__(self, loader, tag, node):
+    def __init__(self, loader, tag, value):
         self.loader = loader
         self.tag = tag
-        self.value = self.construct_value(node)
+        self.value = value  #self.construct_value(node)
 
-    def construct_value(self, node):
-        from ..loader import _object_constructor
-        if hasattr(node, 'tag') and not node.tag.startswith('tag:yaml.org'):
-            return _object_constructor(self.loader, node)
-        if isinstance(node, yaml.nodes.ScalarNode):
-            return self.loader.construct_scalar(node)
-        elif isinstance(node, yaml.nodes.SequenceNode):
-            return self.loader.construct_sequence(node)
-        elif isinstance(node, yaml.nodes.MappingNode):
-            return self.loader.construct_mapping(node)
-        if is_list_of_tuples_mapping(node):
-            return {self.construct_value(k): self.construct_value(v) for k, v in node}
-        elif isinstance(node, list):
-            return [self.construct_value(i) for i in node]
-        elif isinstance(node, str):
-            return node
-        raise RuntimeError(f'Unable to construct node: {node}')
+    @classmethod
+    def construct_value(cls, loader, node):
+        if isinstance(node, yaml.MappingNode):
+            return loader.construct_mapping(node)
+        elif isinstance(node, yaml.SequenceNode):
+            return loader.construct_sequence(node)
+        elif isinstance(node, yaml.ScalarNode):
+            return loader.construct_scalar(node)
+        else:
+            raise RuntimeError(f'Unexpected node type: {node}')
 
 
 class YAMLConfiguredNode(YAMLConfiguredObject):

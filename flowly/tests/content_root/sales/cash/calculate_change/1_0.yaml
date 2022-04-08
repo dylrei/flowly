@@ -1,16 +1,16 @@
-- !META
-  domain: test_cases/document_loading
-  name: cash_sale
-  version: 1.0
-  status: testing
-
-
-- !BODY
-  - !Action
-    id: specifications/testing::subtract==1.0
-    left: !Data order_total
-    right: !Data cash_tendered
-    store_results: !Data change_due
-
-- !RETURN
-  change_due: !Data change_due
+#- !META
+#  domain: sales/cash
+#  name: calculate_change
+#  version: 1.0
+#  status: testing
+#
+#
+#- !BODY
+#  - !Action
+#    id: core/math::subtract==1.0
+#    left: !Data order_total
+#    right: !Data cash_tendered
+#    store_results: !Data change_due
+#
+#- !RETURN
+#  change_due: !Data change_due

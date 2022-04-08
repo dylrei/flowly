@@ -1,16 +1,17 @@
-from ..utils.identity import get_dotted_identity
+from ..utils.identity import get_dotted_namespace
 
 _executors = {}
 
 class IdentifiedExecutorStore(object):
     @classmethod
     def validate(cls, identity, fx):
-        dotted_identity_domain = get_dotted_identity(identity)
+        dotted_identity_namespace = get_dotted_namespace(identity),
         method_namespace = fx.__module__
-        # function must be identified in the directory structure matching the domain,
-        if not method_namespace.endswith(dotted_identity_domain):
+        # function must be identified in the directory/module structure matching the domain/name
+        if not method_namespace.endswith(dotted_identity_namespace):
             raise RuntimeError(f'Executor identity does not match location of executor declaration: '
-                               f'Identity: {identity}; Declaration location: {method_namespace}')
+                               f'Identity namespace: {dotted_identity_namespace}; '
+                               f'Declaration namespace: {method_namespace}')
 
     @classmethod
     def register(cls, identity, fx):

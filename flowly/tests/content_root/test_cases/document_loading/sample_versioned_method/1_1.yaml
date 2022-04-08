@@ -6,6 +6,12 @@
 
 - !ALIASES
   # a place to store reusable YAML anchors
+  - .: &user-id
+    data_type: string
+    required: true
+    validators:
+      - !Validator
+        id: my_lab/security/validators::is_current_user@@production
   - .: &material-barcode
     data_type: string
     required: true
@@ -20,12 +26,7 @@
     required: true
     member_spec: *material-barcode
   instrument: *material-barcode
-  user:
-    data_type: string
-    required: true
-    validators:
-      - !Validator
-        id: my_lab/security/validators::is_current_user@@production
+  user: *user-id
 
 - !INPUT
   id: my_lab/operations/transfers::stamp_transfer_input_spec@@production

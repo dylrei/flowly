@@ -7,7 +7,8 @@ _loader = yaml.SafeLoader
 
 def _object_constructor(loader, node):
     klass = get_klass_for_tag(node.tag)
-    return klass(loader, node.tag, node.value)
+    return klass(loader, node.tag, klass.construct_value(loader, node))
+
 
 # tag value of None means "for all unmatched tags"
 _loader.add_constructor(None, _object_constructor)

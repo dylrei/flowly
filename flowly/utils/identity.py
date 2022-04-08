@@ -42,5 +42,9 @@ def identity_for_path(*args, **kwargs):
     raise NotImplementedError(msg)
 
 
-def get_dotted_identity(identity):
-    return identity.split(IdentityDelimeter.DOMAIN)[0].replace('/', '.')
+def get_dotted_domain(identity):
+    return deconstruct_identity(identity)[MetaSectionKey.DOMAIN].replace('/', '.')
+
+
+def get_dotted_namespace(identity):
+    return '.'.join([get_dotted_domain(identity), deconstruct_identity(identity)[MetaSectionKey.NAME]])
