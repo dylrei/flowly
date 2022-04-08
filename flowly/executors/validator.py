@@ -1,11 +1,12 @@
-from ..constants.document import YamlKeyword, DataType, DocumentSectionName
+from ..constants.document import YamlKeyword, DataType
+from ..constants.tags import TagName
 from ..utils.validation import validate_expected_and_required_values, int_or_none
 
 
 class InputValidator(object):
     def __init__(self, identity, loaded_yaml):
         self.identity = identity
-        self.spec = loaded_yaml[DocumentSectionName.INPUT]
+        self.spec = loaded_yaml[TagName.INPUT]
 
     def validate(self, data_node):
         if isinstance(data_node, dict):

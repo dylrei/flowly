@@ -8,5 +8,5 @@ class InputValidatorStore(object):
     def get_validator(cls, identity):
         return InputValidator(
             identity=identity,
-            loaded_yaml=YamlDocumentStore.load(identity, context=DocumentLoaderContext.SPECIFICATION)
+            loaded_yaml=YamlDocumentStore.load(identity)  # todo: add back in loader context
         )

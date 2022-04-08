@@ -1,0 +1,41 @@
+- !META
+  domain: test_cases/tag_functionality
+  name: persist_input_data
+  version: 1.0
+  status: testing
+
+- !INPUT
+  current_mood:
+    # By default, data is *not* persisted between requests. Any top-level data provided
+    # as input will be available at !Input name_of_input for the lifetime
+    # of the Method/Step the data was input for (ex: !Input current_mood)
+    data_type: string
+    required: true
+  current_plans:
+    data_type: string
+    required: true
+    # store: false is an explicit way of configuring default behavior. This input
+    # will be not be persisted, but will be available at !Input current_plans
+    store: false
+  favorite_type_of_hat:
+    data_type: string
+    required: true
+    # Store the value of secret in !State, the object representing the persisted state
+    # of a particular Run of this Method
+    # The string value passed to !State is the name of the key, which does not have to
+    # match the name of the input
+    store: !State favorite_hat
+  favorite_type_of_pie:
+    data_type: string
+    required: true
+    # store: true is equivalent to:
+    # store: !State name_of_input
+    store: true
+
+
+- !RETURN
+  message: Thank you for sharing!
+  persisted_data:
+    <<: !State *
+  volatile_data:
+    <<: !Input *

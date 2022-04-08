@@ -1,5 +1,5 @@
 from . import run_tag_tests
-from ...tags.sections import MetaSectionTag, BodySectionTag, AliasesSectionTag, InputSectionTag, ReturnSectionTag
+from ...constants.tags import TagName
 
 
 def test_meta_tag():
@@ -9,10 +9,8 @@ def test_meta_tag():
       kw_two: Value Two
       kw_three: Value Three'''
     run_tag_tests(
-        tag_klass=MetaSectionTag,
         document=sample_yaml,
         expected_tag_name='!META',
-        expected_klass_name='MetaSection',
         expected_value={'kw_one': 'Value One', 'kw_two': 'Value Two', 'kw_three': 'Value Three'}
     )
 
@@ -24,10 +22,8 @@ def test_body_tag():
       - Item Two
       - Item Three'''
     run_tag_tests(
-        tag_klass=BodySectionTag,
         document=sample_yaml,
         expected_tag_name='!BODY',
-        expected_klass_name='BodySection',
         expected_value=['Item One', 'Item Two', 'Item Three']
     )
 
@@ -39,10 +35,8 @@ def test_aliases_tag():
       - Item Two
       - Item Three'''
     run_tag_tests(
-        tag_klass=AliasesSectionTag,
         document=sample_yaml,
         expected_tag_name='!ALIASES',
-        expected_klass_name='AliasesSection',
         expected_value=['Item One', 'Item Two', 'Item Three']
     )
 
@@ -55,10 +49,8 @@ def test_input_tag():
       - Item Two
       - Item Three'''
     run_tag_tests(
-        tag_klass=InputSectionTag,
         document=sample_seq_yaml,
         expected_tag_name='!INPUT',
-        expected_klass_name='InputSection',
         expected_value=['Item One', 'Item Two', 'Item Three']
     )
 
@@ -69,10 +61,8 @@ def test_input_tag():
       kw_two: Value Two
       kw_three: Value Three'''
     run_tag_tests(
-        tag_klass=InputSectionTag,
         document=sample_obj_yaml,
         expected_tag_name='!INPUT',
-        expected_klass_name='InputSection',
         expected_value={'kw_one': 'Value One', 'kw_two': 'Value Two', 'kw_three': 'Value Three'}
     )
 
@@ -86,10 +76,8 @@ def test_return_tag():
       - Item Two
       - Item Three'''
     run_tag_tests(
-        tag_klass=ReturnSectionTag,
         document=sample_seq_yaml,
-        expected_tag_name='!RETURN',
-        expected_klass_name='ReturnSection',
+        expected_tag_name=TagName.RETURN,
         expected_value=['Item One', 'Item Two', 'Item Three']
     )
 
@@ -100,9 +88,7 @@ def test_return_tag():
       kw_two: Value Two
       kw_three: Value Three'''
     run_tag_tests(
-        tag_klass=ReturnSectionTag,
         document=sample_obj_yaml,
         expected_tag_name='!RETURN',
-        expected_klass_name='ReturnSection',
         expected_value={'kw_one': 'Value One', 'kw_two': 'Value Two', 'kw_three': 'Value Three'}
     )

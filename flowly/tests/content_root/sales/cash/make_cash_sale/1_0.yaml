@@ -1,0 +1,40 @@
+- !META
+  domain: sales/cash
+  name: make_cash_sale
+  version: 1.0
+  status: testing
+
+- !BODY
+  - !Step
+    name: calculate_total
+    description: a step where we calculate what the order total would be
+    input: specifications/testing::simple_yaml_spec==1.0
+    body:
+      - !Action
+        id: specifications/testing::calculate_total==1.0
+        customer: !Material customer
+        items: !Materials selected_items
+        store: !State order_total
+    return:
+      order_total: !State order_total
+
+  - !Step
+    name: create_sale
+    input: specifications/testing::cash_tendered==1.0
+    body:
+      - !Action
+        id: specifications/testing::subtract==1.0
+        left: !State order_total
+        right: !State cash_tendered
+        store: !State change_due
+      - !Action
+        id: specifications/testing::create_sale==1.0
+        # cash_tendered came from input for this step
+        funds_applied: !State cash_tendered
+        # these values are persisted from the previous step / request
+        customer: !Material customer
+        items: !Materials selected_items
+        total_cost: !State order_total
+        store: !State order_number
+    return:
+      <<: !State all
