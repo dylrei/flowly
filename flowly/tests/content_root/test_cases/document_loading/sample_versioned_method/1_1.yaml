@@ -1,0 +1,73 @@
+- !META
+  doctype: specification
+  domain: test_cases/document_loading
+  name: sample_versioned_method
+  version: 1.1
+  status: testing
+
+- !ALIASES
+  # a place to store reusable YAML anchors
+  - required_string: &required-string
+    data_type: string
+    required: true
+  - required_array: &required-array
+    data_type: array
+    required: true
+  - material_barcode: &material-barcode
+    <<: *required-string
+    validators:
+      - !Validator
+        id: my_lab/operations/validators::is_barcode@@production
+
+# any future authoring tool should probably not allow direct editing of items above here
+
+# could be in its own document
+- !INPUT
+  source_plate:
+    <<: *material-barcode
+  target_plates:
+    <<: *required-array
+    member_spec:
+      <<: *material-barcode
+  instrument:
+    <<: *material-barcode
+  user:
+    <<: *required-string
+    validators:
+      - !Validator
+        id: my_lab/security/validators::is_current_user@@production
+
+
+# -- suggested top of the method authoring viewport --
+
+- !INPUT
+  id: my_lab/operations/transfers::stamp_transfer_input_spec@@production
+
+- !BODY
+  - !Step
+    name: stamp_reagents
+    description: completely optional free-text information about this step
+    body:
+      - !Action
+        id: my_lab/operations/transfers::stamp_transfer@@production
+        source_plate: !Material source_plate
+        target_plate: !Material target_plate
+        instrument: !Asset liquid_handler
+        ul_transferred: 3.4
+      - !Data
+        source_plate_status: disposed
+      - !Action
+        id: my_lab/operations/labware::change_status@@production
+        item: !Material source_plate
+        new_status: !Data source_plate_status
+
+- !RETURN
+  # implicitly return contents of !Data
+  success: true
+
+
+#      # do I want to handle function returns? ex:
+#      - !Data
+#        save_result_here:
+#          !Action
+#            id: stuff
