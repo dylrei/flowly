@@ -13,10 +13,15 @@ class YamlKeyword(ConstantNamespace):
 
 class MetaSectionKey(ConstantNamespace):
     DOMAIN = 'domain'
-    METHOD = 'method'
+    NAME = 'name'
     VERSION = 'version'
     STATUS = 'status'
-    DOCTYPE = 'doctype'
+
+
+class DocumentStatus(ConstantNamespace):
+    PRODUCTION = 'production'
+    TESTING = 'testing'
+    DEVELOPMENT = 'development'
 
 
 class DataType(ConstantNamespace):

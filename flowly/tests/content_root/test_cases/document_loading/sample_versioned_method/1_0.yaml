@@ -1,7 +1,7 @@
 - !META
   domain: test_cases/document_loading
   name: sample_versioned_method
-  version: 1.1
+  version: 1.0
   status: testing
 
 - !ALIASES
