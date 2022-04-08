@@ -1,0 +1,5 @@
+- !META
+  domain: test_cases/document_loading
+  method: sample_versioned_document
+  version: 1.0
+  status: development

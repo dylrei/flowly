@@ -1,0 +1,53 @@
+- !META
+  domain: test_cases/document_loading
+  name: sample_versioned_method
+  version: 1.1
+  status: testing
+
+- !ALIASES
+  # a place to store reusable YAML anchors
+  - .: &user-id
+    data_type: string
+    required: true
+    validators:
+      - !Validator
+        id: my_lab/security/validators::is_current_user@@production
+  - .: &material-barcode
+    data_type: string
+    required: true
+    validators:
+      - !Validator
+        id: my_lab/operations/validators::is_barcode@@production
+
+- !INPUT
+  source_plate: *material-barcode
+  target_plates:
+    data_type: array
+    required: true
+    member_spec: *material-barcode
+  instrument: *material-barcode
+  user: *user-id
+
+- !INPUT
+  id: my_lab/operations/transfers::stamp_transfer_input_spec@@production
+
+- !BODY
+  - !Step
+    name: stamp_reagents
+    description: completely optional free-text information about this step
+    body:
+      - !Action
+        id: my_lab/operations/transfers::stamp_transfer@@production
+        source_plate: !Material source_plate
+        target_plate: !Material target_plate
+        instrument: !Asset liquid_handler
+        ul_transferred: 3.4
+      - !Data
+        source_plate_status: disposed
+      - !Action
+        id: my_lab/operations/labware::change_status@@production
+        item: !Material source_plate
+        new_status: !Data source_plate_status
+
+- !RETURN
+  success: true

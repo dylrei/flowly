@@ -1,0 +1,25 @@
+- !META
+  doctype: specification
+  domain: test_cases/document_loading
+  name: sample_versioned_method
+  version: 1.0
+  status: testing
+
+
+- !ALIASES
+  # a place to store reusable YAML anchors
+  - array_of_objects: &array-of-objects
+    data_type: array
+    member_data_type: object
+  - is_barcode: &barcoded-material
+    data_type: string
+    required: true
+    validators:
+      - !Validator validator_identity
+
+- !INPUT
+  customer:
+    <<: *barcoded-material
+  items:
+    <<: *array-of-objects
+    member_spec: specifications/testing::item_with_price==1.0
