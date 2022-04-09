@@ -31,3 +31,5 @@ python -m pip install git+https://github.com/dylrei/flowly.git@v0.1
  * FLOW-100 Implement IdentifiedDocumentStore
  * FLOW-13 Load versioned specification and use for validation
  * FLOW-116 Finalize YAML->object loading
+### v0.2
+ * FLOW-29 Load and execute a simple Method
