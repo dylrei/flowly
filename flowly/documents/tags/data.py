@@ -6,5 +6,5 @@ class StateTag(YAMLConfiguredObject):
     tag_name = TagName.State
 
 
-class InputTag(YAMLConfiguredObject):
-    tag_name = TagName.Input
+class DataTag(YAMLConfiguredObject):
+    tag_name = TagName.Data

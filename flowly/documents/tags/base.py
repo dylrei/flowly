@@ -1,11 +1,27 @@
 import yaml
 
+from flowly.constants.method import MethodKeyword
+
 
 class YAMLConfiguredObject(object):
+    control_keys = [MethodKeyword.IDENTITY, MethodKeyword.OUTPUT_TARGET]
+
     def __init__(self, loader, tag, value):
         self.loader = loader
         self.tag = tag
-        self.value = value  #self.construct_value(node)
+        self._value = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def identity(self):
+        return self._value[MethodKeyword.IDENTITY]
+
+    @property
+    def output_target(self):
+        return self._value.get(MethodKeyword.OUTPUT_TARGET)
 
     @classmethod
     def construct_value(cls, loader, node):
@@ -19,23 +35,22 @@ class YAMLConfiguredObject(object):
             raise RuntimeError(f'Unexpected node type: {node}')
 
 
-class YAMLConfiguredNode(YAMLConfiguredObject):
     def __getitem__(self, item):
-        if isinstance(self.value, dict):
-            return self.value[item]
+        if isinstance(self._value, dict):
+            return self._value[item]
         else:
-            raise RuntimeError('Attempt to use __getitem__ on an array-shaped tag object: {self.tag} {self.value}')
+            raise RuntimeError('Attempt to use __getitem__ on tag with an array-shaped value: '
+                               '{self.tag} {self.value}')
 
     def __iter__(self):
         self.idx = 0
         return self
 
     def __next__(self):
-
-        if isinstance(self.value, list):
-            source = self.value
+        if isinstance(self._value, list):
+            source = self._value
         else:
-            source = sorted(self.value.keys())
+            source = sorted(self._value.keys())
         if self.idx + 1 > len(source):
             raise StopIteration
         else:
@@ -47,13 +62,13 @@ class YAMLConfiguredNode(YAMLConfiguredObject):
         if isinstance(self.value, dict):
             return self.value.keys()
         else:
-            raise RuntimeError('Attempt to use .keys() on an array-shaped tag object: {self.tag} {self.value}')
+            raise RuntimeError('Attempt to use .keys() on tag with an array-shaped value: {self.tag} {self.value}')
 
     def items(self):
         if isinstance(self.value, dict):
             return self.value.items()
         else:
-            raise RuntimeError('Attempt to use .items() on an array-shaped tag object: {self.tag} {self.value}')
+            raise RuntimeError('Attempt to use .items() on tag with an array-shaped value: {self.tag} {self.value}')
 
 
 def is_list_of_tuples_mapping(node):

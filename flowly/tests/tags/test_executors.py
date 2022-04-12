@@ -49,12 +49,11 @@ def test_run_action():
       id: core/math::subtract==production
       left: 27.0
       right: 11
-      store_return: !State my_return
+      output>>: !State my_return
 '''
     loaded_doc = _load_yaml(sample_yaml)
     action = loaded_doc[0]
     assert action.execute() == {TagName.State: {'my_return': 16}}
-    assert action.return_value == 16
 
 
 def test_run_validator():
