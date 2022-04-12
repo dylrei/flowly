@@ -2,7 +2,7 @@ run:
 	python manage.py runserver
 
 test:
-	pytest -vv -s
+	pytest -vv -s --ds=server.settings
 
 shell:
 	python manage.py shell

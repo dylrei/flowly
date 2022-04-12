@@ -1,15 +1,33 @@
 import uuid
 from copy import deepcopy
+from datetime import timezone, datetime
 
 from ..constants.tags import TagName
-from ..utils.method import handle_method_or_step_body, render_tag_payload, provide_return, StepReturnData
+from ..models import Run
+from ..models.state import RunState
+from ..utils.method import handle_method_or_step_body, render_tag_payload, provide_return, StepReturnData, \
+    load_data_and_state, body_items_after_node
 
 
 class Data(object):
-    def __init__(self, method_identity, data=None):
+    def __init__(self, run_obj, data=None, node=None):
         self.identity = str(uuid.uuid4())
-        self.method_id = method_identity
-        self._value = deepcopy(data) if data is not None else dict()
+        self.run = run_obj
+        self.node = node
+        if data is not None:
+            self.latest_return = data.get('latest_return', {})
+            self._value = deepcopy({k: w for k, w in data.items() if k != 'latest_return'})
+        else:
+            self.latest_return = dict()
+            self._value = dict()
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def method_id(self):
+        return self.run.method
 
     def update(self, new_data):
         self._value.update(new_data)
@@ -28,10 +46,13 @@ class Data(object):
 
 
 class State(Data):
-    node = None
-
     def persist(self):
-        pass
+        RunState.objects.create(
+            identity=self.identity,
+            data=self.value,
+            run=self.run,
+            node=self.node
+        )
 
 
 class MethodExecutor(object):
@@ -66,29 +87,27 @@ class MethodExecutor(object):
     def validate_input(self, data):
         pass
 
-    # "state" is data that persists across multiple Steps in the Run, it corresponds to the !State tag
-    # "data" is data that is only available during the lifetime of this Step, it corresponds to the !Data tag
-    def run(self, data=None, state=None):
-        load_state = False
-        if state is not None:
-            # if we've got it, we will want to resume where we left off, either here or in the step that last returned
-            # to us
-            load_state = True
-            import ipdb; ipdb.set_trace()
-        data = Data(data=data, method_identity=self.identity)
-        state = State(data=state, method_identity=self.identity)
-        self.sanity_check(data, state)
-        self.validate_input(data)
-        if load_state:
+    def run(self, data_provided=None, state_identity=None):
+        self.sanity_check(data_provided, state_identity)
+        self.validate_input(data_provided)
+        run_obj = Run.objects.create(identity=str(uuid.uuid4()), method=self.identity)
+        # "state" is data that persists across multiple Steps in the Run, it corresponds to the !State tag
+        # "data" is data that is only available during the lifetime of this Step, it corresponds to the !Data tag
+        data, state, state_loaded = load_data_and_state(run_obj, data_provided, state_identity)
+        if state_loaded:
             if state.method_id == self.identity:
-                next_steps = body_advanced_to_node(self.body_section, state.node)
+                next_steps = body_items_after_node(self.body_section, state.latest_return['node'])
             else:
                 # load that method with the state it returned
+                import ipdb; ipdb.set_trace()
                 pass
-        result = handle_method_or_step_body(self.body_section, data, state)
+        else:
+            next_steps = self.body_section
+        result = handle_method_or_step_body(next_steps, data, state)
         if isinstance(result, StepReturnData):
             return_data = {
                 'method': self.identity,
+                'node': state.node,
                 'result': result.data,
                 'state': state.identity,
                 'completed': False,
@@ -100,6 +119,8 @@ class MethodExecutor(object):
                 'state': state.identity,
                 'completed': True,
             }
+            run_obj.completed = datetime.now(tz=timezone.utc)
+            run_obj.save()
         state.update({'latest_return': return_data})
         return provide_return(return_data, state)
 

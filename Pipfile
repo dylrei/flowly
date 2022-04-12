@@ -10,6 +10,7 @@ django = "*"
 [dev-packages]
 pytest = "*"
 ipdb = "*"
+pytest-django = "*"
 
 [requires]
 python_version = "3.8"

@@ -1,10 +1,27 @@
 from datetime import datetime, timezone
 
-from flowly.constants.method import MethodKeyword
-from flowly.constants.tags import TagName
-from flowly.documents.tags import YAMLConfiguredObject
-from flowly.stores.identified_executor import IdentifiedExecutorStore
-from flowly.stores.material import MaterialStore, Material, Asset
+from ..constants.method import MethodKeyword
+from ..constants.tags import TagName
+from ..documents.tags import YAMLConfiguredObject
+from ..models.state import RunState
+from ..stores.identified_executor import IdentifiedExecutorStore
+from ..stores.material import MaterialStore, Material, Asset
+
+
+def load_data_and_state(run_obj, data_provided, state_identity):
+    from ..executors.method import Data, State
+    data = Data(run_obj=run_obj, data=data_provided)
+    if state_identity is not None:
+        try:
+            state_obj = RunState.objects.get(identity=state_identity)
+        except RunState.DoesNotExist:
+            raise RuntimeError(f'No such state identity: {state_identity}')
+        state = State(run_obj=run_obj, data=state_obj.data, node=state_obj.node)
+        state_loaded = True
+    else:
+        state = State(run_obj=run_obj)
+        state_loaded = False
+    return data, state, state_loaded
 
 
 def handle_method_or_step_body(body, data, state):
@@ -12,6 +29,15 @@ def handle_method_or_step_body(body, data, state):
         result = handle_item(item, data, state)
         if isinstance(result, StepReturnData):
             return result
+
+
+def body_items_after_node(body_section, node_name):
+    node_idx = None
+    for idx, node in enumerate(body_section):
+        if getattr(node, 'name', None) == node_name:
+            node_idx = idx
+            break
+    return body_section[node_idx + 1:]
 
 
 def handle_item(item, data, state):
@@ -27,7 +53,6 @@ def handle_step(step, data, state):
         return results
     if MethodKeyword.RETURN in step.keys():
         return_data = render_tag_payload(step.value[MethodKeyword.RETURN], data, state)
-        state.persist()
         return StepReturnData(return_data, state)
 
 

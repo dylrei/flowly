@@ -33,20 +33,20 @@
     input: specifications/testing::cash_tendered==1.0
     body:
       - !Action
-        id: specifications/testing::subtract==1.0
-        left: !State cash_tendered
+        id: core/math::subtract==1.0
+        left: !Data cash_tendered
         right: !State order_total
         output>>: !State change_due
       - !Action
-        id: specifications/testing::create_sale==1.0
+        id: sales::create_sale==1.0
         # value provided in the current request
         funds_applied: !Data cash_tendered
         # these values are persisted from the previous step / request
         customer: !Material customer
-        items: !Materials selected_items
+        items: !Materials items
         total_cost: !State order_total
         output>>: !State order_number
-    return:
-      customer: !State customer
-      order_number: !State order_number
-      total_cost: !State order_total
+- !RETURN
+  customer: !State customer
+  order_number: !State order_number
+  total_cost: !State order_total
