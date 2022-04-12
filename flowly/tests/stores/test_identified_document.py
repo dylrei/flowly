@@ -12,7 +12,7 @@ def test_identified_document_store():
         'version': '1.0',
         'status': 'development'
     }
-    assert load_yaml_document(IdentifiedDocumentStore.use(identity))[TagName.META].value == expected
+    assert load_yaml_document(IdentifiedDocumentStore.use(identity))[TagName.META]._value == expected
 
     identity = 'test_cases/document_loading::sample_versioned_document==1.1'
     expected = {
@@ -21,4 +21,4 @@ def test_identified_document_store():
         'version': '1.1',
         'status': 'development'
     }
-    assert load_yaml_document(IdentifiedDocumentStore.use(identity))[TagName.META].value == expected
+    assert load_yaml_document(IdentifiedDocumentStore.use(identity))[TagName.META]._value == expected

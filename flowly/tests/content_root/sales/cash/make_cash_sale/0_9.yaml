@@ -1,0 +1,29 @@
+- !META
+  domain: sales/cash
+  name: make_cash_sale
+  version: 0.9
+  status: testing
+
+- !INPUT
+  customer:
+    data_type: record
+    required: true
+  items:
+    data_type: array
+    member_data_type: record
+
+- !BODY
+  - !Step
+    name: calculate_total
+#    input: specifications/testing::simple_yaml_spec==1.0
+    body:
+      - !Action
+        id: specifications/testing::calculate_total==1.0
+        customer: !Material customer
+        items: !Materials items
+        output>>: !Data order_total
+
+- !RETURN
+  order_total: !Data order_total
+  customer: !Data customer
+  total_cost: !Data order_total

@@ -11,7 +11,7 @@ class IdentifiedDocumentStore(object):
     def validate(cls, identity, document):
         loaded_document = load_yaml_document(document)  # TODO: document loading context
         identity_domain = deconstruct_identity(identity)[MetaSectionKey.DOMAIN]
-        document_domain = loaded_document[TagName.META].value[MetaSectionKey.DOMAIN]
+        document_domain = loaded_document[TagName.META]._value[MetaSectionKey.DOMAIN]
         # document domain must match identity domain
         if not identity_domain == document_domain:
             raise RuntimeError(f'Document domain does not match domain of identity: '
