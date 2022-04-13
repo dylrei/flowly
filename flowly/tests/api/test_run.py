@@ -19,22 +19,21 @@ class RunApiTestCase(TestCase):
                 'name': 'Alia'
             }
         }
+        api_args = '/api/run/', json.dumps(payload)
+        api_kwargs = {'content_type': 'application/json'}
+
         assert Payload.objects.count() == 0
         assert Response.objects.count() == 0
-        response = self.client.post('/api/run/',
-                                    json.dumps(payload),
-                                    content_type="application/json").json()
+        response = self.client.post(*api_args, **api_kwargs).json()
         assert response['method'] == method
         assert response['node'] is None
         assert 'state' in response
         assert response['data']['result']['response'] == 'Hello, Alia!'
-
-        # posting the same data yields the same response, with no side effects
         assert Payload.objects.count() == 1
         assert Response.objects.count() == 1
-        response2 = self.client.post('/api/run/',
-                                     json.dumps(payload),
-                                     content_type="application/json").json()
+
+        # posting the same data yields the same response, with no side effects
+        response2 = self.client.post(*api_args, **api_kwargs).json()
         assert response2['method'] == response['method']
         assert response2['node'] == response['node']
         assert 'state' in response2
