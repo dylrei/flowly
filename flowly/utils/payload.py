@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 
 
 def is_json(value):
@@ -24,3 +25,11 @@ def sort_and_jsonify_data(data):
 
 def hash_data(data):
     return hashlib.md5(sort_and_jsonify_data(data)).hexdigest()
+
+
+rgx_valid_uuid4 = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z', re.I)
+
+def is_uuid(value):
+    if not isinstance(value, str):
+        return False
+    return bool(rgx_valid_uuid4.match(value))
