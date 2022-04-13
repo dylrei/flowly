@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from ..constants.method import MethodKeyword
+from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..documents.tags import YAMLConfiguredObject
 from ..models.state import RunState
@@ -178,13 +179,7 @@ def handle_state(state_tag, data, state):
 
 def provide_return(return_data, state):
     state.persist()
-    return {
-        'method': state.method_id,
-        'node': state.node,
-        'state': state.identity,
-        'data': return_data,
-        'timestamp': datetime.now(timezone.utc)
-    }
+    return dict(return_data, **{PayloadKey.TIMESTAMP: datetime.now(timezone.utc)})
 
 
 handler_for_tag = {
@@ -203,7 +198,7 @@ render_for_tag = {
 
 class StepReturnData(object):
     def __init__(self, return_data, state):
-        self.id = state.method_id
-        self.node = state.node
+        self.resume_method = state.method_id
+        self.resume_node = state.node
         self.data = return_data
         self.resume_state = state.identity

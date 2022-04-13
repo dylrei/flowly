@@ -2,6 +2,7 @@ import uuid
 from copy import deepcopy
 from datetime import timezone, datetime
 
+from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..models import Run
 from ..models.state import RunState
@@ -96,7 +97,7 @@ class MethodExecutor(object):
         data, state, state_loaded = load_data_and_state(run_obj, data_provided, state_identity)
         if state_loaded:
             if state.method_id == self.identity:
-                next_steps = body_items_after_node(self.body_section, state.latest_return['node'])
+                next_steps = body_items_after_node(self.body_section, state.node)
             else:
                 # load that method with the state it returned
                 import ipdb; ipdb.set_trace()
@@ -106,22 +107,33 @@ class MethodExecutor(object):
         result = handle_method_or_step_body(next_steps, data, state)
         if isinstance(result, StepReturnData):
             return_data = {
-                'method': self.identity,
-                'node': state.node,
-                'result': result.data,
-                'state': state.identity,
-                'completed': False,
+                PayloadKey.REQUEST: {
+                    PayloadKey.METHOD: self.identity,
+                    PayloadKey.NODE: state.node,
+                    PayloadKey.STATE: state.identity,
+                    PayloadKey.COMPLETED: False,
+                },
+                PayloadKey.DATA: result.data,
+                PayloadKey.NEXT: {
+                    PayloadKey.METHOD: result.resume_method,
+                    PayloadKey.NODE: result.resume_node,
+                    PayloadKey.STATE: result.resume_state,
+                },
             }
         else:
             return_data = {
-                'method': self.identity,
-                'result': render_tag_payload(self.return_section, data, state),
-                'state': state.identity,
-                'completed': True,
+                PayloadKey.REQUEST: {
+                    PayloadKey.METHOD: self.identity,
+                    PayloadKey.NODE: state.node,
+                    PayloadKey.STATE: state.identity,
+                    PayloadKey.COMPLETED: True,
+                },
+                PayloadKey.DATA: render_tag_payload(self.return_section, data, state),
+                PayloadKey.NEXT: {},
             }
             run_obj.completed = datetime.now(tz=timezone.utc)
             run_obj.save()
-        state.update({'latest_return': return_data})
+        state.update({'next': return_data['next']})
         return provide_return(return_data, state)
 
 
