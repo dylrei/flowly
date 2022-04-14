@@ -50,3 +50,47 @@ class RunApiTestCase(TestCase):
         # no new payloads or responses created
         assert Payload.objects.count() == 1
         assert Response.objects.count() == 1
+
+    def test_multi_step_api_run(self):
+        method = 'sales/cash::make_cash_sale==1.0'
+        payload = {
+            'method': method,
+            'data': {
+                'customer': 'finance/lists::CUST-123',
+                'items': ['sales/items::ITEM-777', 'sales/items::ITEM-888', 'sales/items::ITEM-999']
+            }
+        }
+        api_args = '/api/run/', json.dumps(payload)
+        api_kwargs = {'content_type': 'application/json'}
+
+        # first step
+        result = self.client.post(*api_args, **api_kwargs).json()
+        assert result[PayloadKey.REQUEST][PayloadKey.METHOD] == method
+        assert result[PayloadKey.REQUEST][PayloadKey.NODE] == 'calculate_total'
+        assert is_uuid(result[PayloadKey.REQUEST][PayloadKey.STATE])
+        assert result[PayloadKey.REQUEST][PayloadKey.COMPLETED] is False
+        assert result[PayloadKey.DATA] == {'order_total': 3.14}
+        assert result[PayloadKey.NEXT] == {k: v for k, v in result[PayloadKey.REQUEST].items() if
+                                           k != PayloadKey.COMPLETED}
+        assert PayloadKey.TIMESTAMP in result
+        first_run_state_id = result[PayloadKey.REQUEST][PayloadKey.STATE]
+        first_run_node = result[PayloadKey.NEXT][PayloadKey.NODE]
+
+        # second step
+        payload = {
+            PayloadKey.METHOD: method,
+            PayloadKey.DATA: {'cash_tendered': 5.00},
+            PayloadKey.STATE: first_run_state_id,
+            PayloadKey.NODE: first_run_node,
+        }
+        api_args = '/api/run/', json.dumps(payload)
+        result2 = self.client.post(*api_args, **api_kwargs).json()
+        assert result2[PayloadKey.REQUEST][PayloadKey.METHOD] == method
+        assert result2[PayloadKey.REQUEST][PayloadKey.NODE] == 'create_sale'
+        assert is_uuid(result2[PayloadKey.REQUEST][PayloadKey.STATE])
+        assert result2[PayloadKey.REQUEST][PayloadKey.COMPLETED] is True
+        assert result2[PayloadKey.DATA] == {'customer': 'finance/lists::CUST-123',
+                                            'order_number': 'ORD-1234',
+                                            'total_cost': 3.14}
+        assert result2[PayloadKey.NEXT] == {}
+        assert PayloadKey.TIMESTAMP in result2
