@@ -2,4 +2,8 @@ from constant_namespace import ConstantNamespace
 
 
 class FieldLength(ConstantNamespace):
-    IDENTITY = 100
+    MD5 = 32
+    UUID = 36
+    NAME = 50
+    IDENTITY = 100  # todo: actually justify a number
+    DESCRIPTION = 100

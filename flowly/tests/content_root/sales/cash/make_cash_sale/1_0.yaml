@@ -4,17 +4,27 @@
   version: 1.0
   status: testing
 
+- !INPUT
+  customer:
+    data_type: record
+  items:
+    data_type: array
+    member_data_type: record
+
 - !BODY
+  # add inputs to state so we can use them next step
+  - !State
+    customer: !Data customer
+    items: !Data items
   - !Step
     name: calculate_total
-    description: a step where we calculate what the order total would be
     input: specifications/testing::simple_yaml_spec==1.0
     body:
       - !Action
         id: specifications/testing::calculate_total==1.0
         customer: !Material customer
-        items: !Materials selected_items
-        store: !State order_total
+        items: !Materials items
+        output>>: !State order_total
     return:
       order_total: !State order_total
 
@@ -23,18 +33,20 @@
     input: specifications/testing::cash_tendered==1.0
     body:
       - !Action
-        id: specifications/testing::subtract==1.0
-        left: !State order_total
-        right: !State cash_tendered
-        store: !State change_due
+        id: core/math::subtract==1.0
+        left: !Data cash_tendered
+        right: !State order_total
+        output>>: !State change_due
       - !Action
-        id: specifications/testing::create_sale==1.0
-        # cash_tendered came from input for this step
-        funds_applied: !State cash_tendered
+        id: sales::create_sale==1.0
+        # value provided in the current request
+        funds_applied: !Data cash_tendered
         # these values are persisted from the previous step / request
         customer: !Material customer
-        items: !Materials selected_items
+        items: !Materials items
         total_cost: !State order_total
-        store: !State order_number
-    return:
-      <<: !State all
+        output>>: !State order_number
+- !RETURN
+  customer: !State customer
+  order_number: !State order_number
+  total_cost: !State order_total

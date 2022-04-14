@@ -10,4 +10,4 @@ def run_tag_tests(document, expected_tag_name, expected_value):
     assert obj.tag == expected_tag_name
     if hasattr(obj, 'tag_name'):
         assert obj.tag_name == expected_tag_name
-    assert obj.value == expected_value
+    assert obj._value == expected_value

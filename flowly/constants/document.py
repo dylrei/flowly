@@ -29,9 +29,10 @@ class DataType(ConstantNamespace):
     INTEGER = 'integer'
     FLOAT = 'float'
     BOOLEAN = 'boolean'
-    OTHER = 'other'
     OBJECT = 'object'
     ARRAY = 'array'
+    MATERIAL = 'material'
+    NODE = 'node'
 
 
 class DocumentSectionName(ConstantNamespace):
