@@ -1,3 +1,4 @@
+from .names import NameStore
 from ..constants.identity import MetaSectionKey
 from ..constants.tags import TagName
 from ..documents.loader import load_yaml_document
@@ -12,10 +13,10 @@ class IdentifiedDocumentStore(object):
         loaded_document = load_yaml_document(document)  # TODO: document loading context
         identity_domain = deconstruct_identity(identity)[MetaSectionKey.DOMAIN]
         document_domain = loaded_document[TagName.META]._value[MetaSectionKey.DOMAIN]
-        # document domain must match identity domain
-        if not identity_domain == document_domain:
-            raise RuntimeError(f'Document domain does not match domain of identity: '
-                               f'Identity: {identity}; Document domain: {document_domain}')
+        # # document domain must match identity domain
+        # if not identity_domain == document_domain:
+        #     raise RuntimeError(f'Document domain does not match domain of identity: '
+        #                        f'Identity: {identity}; Document domain: {document_domain}')
 
     @classmethod
     def preload(cls, document_identities):
@@ -26,7 +27,8 @@ class IdentifiedDocumentStore(object):
         global _documents
         if identity not in _documents:
             try:
-                with open(path_for_identity(identity), 'r') as document:
+                namespace = NameStore.get_namespace(identity)
+                with open(path_for_identity(namespace, identity), 'r') as document:
                     new_doc = document.read()
                     cls.validate(identity, new_doc)
                     _documents[identity] = new_doc

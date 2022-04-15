@@ -23,12 +23,12 @@ def construct_identity(meta_values):
     )
 
 
-def path_for_identity(identity):
+def path_for_identity(namespace, identity):
     meta_info = deconstruct_identity(identity)
-    root_path = IdentityConfigs.get(IdentityConfigsKey.PATH_TO_CONTENT_ROOT)
+    domain_path = '/'.join(meta_info[MetaSectionKey.DOMAIN].split('/')[1:])
     return '{root_path}/{domain_path}/{name}/{version}.yaml'.format(
-        root_path=root_path,
-        domain_path=meta_info[MetaSectionKey.DOMAIN],
+        root_path=namespace.file_path,
+        domain_path=domain_path,
         name=meta_info[MetaSectionKey.NAME],
         version=meta_info[MetaSectionKey.VERSION].replace('.', '_')
     )

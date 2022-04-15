@@ -1,7 +1,7 @@
 from flowly.stores.names import NameStore
 
-examples_namespace = NameStore.register(
-    unique_name='examples',
+sales_namespace = NameStore.register(
+    unique_name='sales',
     file_path=__file__,
     module_path=__name__,
     canonical='ff.flowflow.io',

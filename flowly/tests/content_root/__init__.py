@@ -1,16 +1,25 @@
-from .core.math.subtract import subtract_1_0
-from .executors.test_identified.test_fx import one_implementation, another_implementation, yet_another_implementation, \
-    do_not_use_this_version_unless_you_are_me
-from ...namespacing.root import ContentRoot
+from .core import core_namespace
+from .core.math import subtract
+from .examples import examples_namespace
+from .executors import executors_namespace
+from .executors.test_identified import test_fx
+from .sales import sales_namespace
+from .specifications import specifications_namespace
+from .test_cases import test_cases_namespace
 
-# we may only load executors/documents in or below this directory
-_module_namespace = __name__
-_file_path = __file__
-content_root = ContentRoot(module_namespace=_module_namespace, file_path=_file_path)
+from ...stores.names import NameStore
 
-_imported_executors = [
-    # core/math/subtract
-    subtract_1_0,
-    # executors/test_identified
-    one_implementation, another_implementation, yet_another_implementation, do_not_use_this_version_unless_you_are_me
-]
+authorized_actions = [subtract, test_fx]
+
+authorized_namespaces = [specifications_namespace, test_cases_namespace, sales_namespace, executors_namespace,
+                         core_namespace, examples_namespace]
+
+ffio_namespace = NameStore.register(
+    unique_name='tests',
+    file_path=__file__,
+    module_path=__name__,
+    canonical='ff.flowflow.io',
+    source='github.com:dylrei/flowly.git',
+    actions=authorized_actions,
+    namespaces=authorized_namespaces
+)
