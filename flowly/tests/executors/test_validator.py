@@ -1,11 +1,12 @@
 import pytest
 
-from ...stores.input_validation import InputValidatorStore
+from flowly.stores.names import NameStore
 
 
 def test_simple_input_validator():
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     identity = 'specifications/testing::simple_yaml_spec==1.0'
-    validator = InputValidatorStore.get_validator(identity)
+    validator = namespace.get_validator(identity)
 
     valid_examples = [
         {
@@ -23,7 +24,7 @@ def test_simple_input_validator():
     ]
     # happy paths
     for test_data in valid_examples:
-        assert validator.validate(test_data) is True
+        assert validator.validate(test_data, namespace) is True
 
     # fail paths
     # extra field provided
@@ -32,7 +33,7 @@ def test_simple_input_validator():
         'designation': 'Seven of Nine, Tertiary Adjunct of Unimatrix 01'
     }
     with pytest.raises(RuntimeError) as excinfo:
-        validator.validate(invalid_extra_field)
+        validator.validate(invalid_extra_field, namespace)
     assert 'Unexpected data/payload key(s) provided' in str(excinfo.value)
 
     # wrong data type: str for int
@@ -41,7 +42,7 @@ def test_simple_input_validator():
         'favorite_number': 'Number One'
     }
     with pytest.raises(RuntimeError) as excinfo:
-        validator.validate(invalid_wrong_data_type_1)
+        validator.validate(invalid_wrong_data_type_1, namespace)
     assert 'Expected integer, got: Number One' in str(excinfo.value)
 
     # wrong data type: array of int, not int
@@ -50,14 +51,15 @@ def test_simple_input_validator():
         'favorite_number': [1]
     }
     with pytest.raises(RuntimeError) as excinfo:
-        validator.validate(invalid_wrong_data_type_2)
+        validator.validate(invalid_wrong_data_type_2, namespace)
     assert 'Expected integer, got: [1]' in str(excinfo.value)
 
 
 
 def test_validate_array_spec():
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     identity = 'specifications/testing::array_yaml_spec==1.0'
-    validator = InputValidatorStore.get_validator(identity)
+    validator = namespace.get_validator(identity)
 
     valid_input = {
         'personnel': [
@@ -76,7 +78,7 @@ def test_validate_array_spec():
         'lucky_numbers': [42, 47, 127]
     }
 
-    assert validator.validate(valid_input) is True
+    assert validator.validate(valid_input, namespace) is True
 
     # Fail paths: too few or too many members (min_size 2; max_size 3)
     not_enough_members = {
@@ -88,7 +90,7 @@ def test_validate_array_spec():
         'lucky_numbers': [42, 47, 127]
     }
     with pytest.raises(RuntimeError) as excinfo:
-        validator.validate(not_enough_members)
+        validator.validate(not_enough_members, namespace)
     assert 'Not enough elements' in str(excinfo.value)
 
     too_many_members = {
@@ -111,13 +113,14 @@ def test_validate_array_spec():
         'lucky_numbers': [42, 47, 127]
     }
     with pytest.raises(RuntimeError) as excinfo:
-        validator.validate(too_many_members)
+        validator.validate(too_many_members, namespace)
     assert 'Too many elements' in str(excinfo.value)
 
 
 def test_validate_nested_array_spec():
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     identity = 'specifications/testing::nested_array_spec==1.0'
-    validator = InputValidatorStore.get_validator(identity)
+    validator = namespace.get_validator(identity)
 
     valid_input = {
         'duty_assignments': [
@@ -153,5 +156,5 @@ def test_validate_nested_array_spec():
             },
         ]
     }
-    assert validator.validate(valid_input) is True
+    assert validator.validate(valid_input, namespace) is True
 

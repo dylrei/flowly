@@ -46,7 +46,7 @@ def handle_item(item, data, state, namespace):
 
 def handle_step(step, data, state, namespace):
     if not hasattr(step, 'name'):
-        import ipdb; ipdb.set_trace()
+        raise RuntimeError(f'Step requires a name, none provided')
     state.node = step.name  # New rules: all steps must have names, all names must be unique within the method
     results = handle_method_or_step_body(step._value[MethodKeyword.BODY], data, state, namespace)
     if isinstance(results, StepReturnData):

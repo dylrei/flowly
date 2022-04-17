@@ -1,6 +1,7 @@
 from . import run_tag_tests
 from ...constants.tags import TagName
 from ...documents.loader import _load_yaml
+from ...stores.names import NameStore
 
 
 def test_action_tag():
@@ -46,14 +47,15 @@ def test_validator_tag():
 def test_run_action():
     sample_yaml = '''
     - !Action
-      id: core/math::subtract==production
+      id: math::subtract==production
       left: 27.0
       right: 11
       output>>: !State my_return
 '''
     loaded_doc = _load_yaml(sample_yaml)
+    namespace = NameStore.get_namespace('flowly.tests.content_root.core')
     action = loaded_doc[0]
-    assert action.execute() == {TagName.State: {'my_return': 16}}
+    assert action.execute(namespace) == {TagName.State: {'my_return': 16}}
 
 
 def test_run_validator():
@@ -65,6 +67,7 @@ def test_run_validator():
         'name': 'Will Riker',
         'favorite_number': 1
     }
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     loaded_doc = _load_yaml(sample_yaml)
     validator = loaded_doc[0]
-    assert validator.validate(sample_data) is True
+    assert validator.validate(sample_data, namespace) is True

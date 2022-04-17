@@ -83,7 +83,6 @@ class RunApiTestCase(TestCase):
             PayloadKey.NAMESPACE: namespace,
             PayloadKey.DATA: {'cash_tendered': 5.00},
             PayloadKey.STATE: first_run_state_id,
-            PayloadKey.NAMESPACE: namespace,
         }
         api_args = '/api/run/', json.dumps(payload)
         result2 = self.client.post(*api_args, **api_kwargs).json()

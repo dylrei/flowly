@@ -44,7 +44,6 @@ class Namespace(object):
             namespace=self,
             loaded_yaml=self.methods[identity]
         )
-        # return self.methods[identity]
 
     def get_executor(self, identity):
         if identity not in self._executors:
@@ -55,6 +54,15 @@ class Namespace(object):
                     return NameStore.get_namespace(namespace_identity).get_executor(local_identity)
             import ipdb; ipdb.set_trace()
         return self._executors[identity]
+
+    def get_validator(self, identity):
+        from flowly.executors.validator import InputValidator
+        if identity not in self.methods:
+            raise RuntimeError(f'Validator {identity} not found in Namespace {self.unique_name}')
+        return InputValidator(
+            identity=identity,
+            loaded_yaml=self.methods[identity]
+        )
 
     def is_namespace(self, path):
         pass
@@ -69,7 +77,6 @@ class Namespace(object):
         for method_path in find_yaml_files(self):
             with open(method_path, 'r') as document:
                 method = load_yaml_document(document.read())
-                print(method, method_path)
                 method_identity = construct_identity(method[TagName.META].value)
                 self._methods[method_identity] = method
 

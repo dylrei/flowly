@@ -1,6 +1,6 @@
 from .base import YAMLConfiguredObject
+from ...constants.method import MethodKeyword
 from ...constants.tags import TagName
-from ...stores.identified_executor import IdentifiedExecutorStore
 
 
 class ExecutorTag(YAMLConfiguredObject):
@@ -22,8 +22,8 @@ class ActionTag(YAMLConfiguredObject):
     def value(self):
         return {k: v for k, v in self._value.items() if k not in self.control_keys}
 
-    def execute(self):
-        executor = IdentifiedExecutorStore.use(self.identity)
+    def execute(self, namespace):
+        executor = namespace.get_executor(self.identity)
         return_value = executor(**self.value)
         if self.output_target:
             return {self.output_target.tag: {self.output_target.value: return_value}}
@@ -43,7 +43,5 @@ class StepTag(YAMLConfiguredObject):
 class ValidatorTag(YAMLConfiguredObject):
     tag_name = TagName.Validator
 
-    def validate(self, node):
-        from ...stores.input_validation import InputValidatorStore
-        validator = InputValidatorStore.get_validator(self._value['id'])
-        return validator.validate(node)
+    def validate(self, node, namespace):
+        return namespace.get_validator(self._value[MethodKeyword.IDENTITY]).validate(node, namespace)
