@@ -93,7 +93,7 @@ class MethodExecutor(object):
     def validate_input(self, data):
         pass
 
-    def run(self, data_provided=None, state_identity=None):
+    def run(self, data_provided=None, state_identity=None, namespace=None):
         self.sanity_check(data_provided, state_identity)
         self.validate_input(data_provided)
         run_obj = Run.objects.create(identity=str(uuid.uuid4()), method=self.identity)
@@ -109,19 +109,19 @@ class MethodExecutor(object):
                 pass
         else:
             next_steps = self.body_section
-        result = handle_method_or_step_body(next_steps, data, state)
+        result = handle_method_or_step_body(next_steps, data, state, self.namespace)
         if isinstance(result, StepReturnData):
             return_data = {
                 PayloadKey.REQUEST: {
                     PayloadKey.METHOD: self.identity,
-                    PayloadKey.NODE: state.node,
+                    PayloadKey.NAMESPACE: namespace.unique_name,
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: False,
                 },
                 PayloadKey.DATA: result.data,
                 PayloadKey.NEXT: {
                     PayloadKey.METHOD: result.resume_method,
-                    PayloadKey.NODE: result.resume_node,
+                    PayloadKey.NAMESPACE: namespace.unique_name,
                     PayloadKey.STATE: result.resume_state,
                 },
             }
@@ -129,7 +129,7 @@ class MethodExecutor(object):
             return_data = {
                 PayloadKey.REQUEST: {
                     PayloadKey.METHOD: self.identity,
-                    PayloadKey.NODE: state.node,
+                    PayloadKey.NAMESPACE: namespace.unique_name,
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: True,
                 },

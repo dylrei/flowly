@@ -1,19 +1,20 @@
 - !META
-  doctype: specification
-  domain: test_cases/document_loading
-  name: sample_versioned_method
+  domain: test_cases
+  name: input_specs
   version: 1.0
   status: testing
 
 
 - !ALIASES
   # a place to store reusable YAML anchors
-  - array_of_objects: &array-of-objects
+  - .: &array-of-objects
     data_type: array
     member_data_type: object
-  - is_barcode: &barcoded-material
+  - .: &barcoded-material
     data_type: string
     required: true
+
+  - .:
     validators:
       - !Validator validator_identity
 

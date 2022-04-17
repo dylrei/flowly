@@ -10,5 +10,6 @@ class MetaSectionKey(ConstantNamespace):
 
 
 class IdentityDelimeter(ConstantNamespace):
+    NAMESPACE = '++'
     DOMAIN = '::'
     VERSION = '=='

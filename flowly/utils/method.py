@@ -5,7 +5,6 @@ from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..documents.tags import YAMLConfiguredObject
 from ..models.state import RunState
-from ..stores.identified_executor import IdentifiedExecutorStore
 from ..stores.material import MaterialStore, Material, Asset
 
 
@@ -25,9 +24,9 @@ def load_data_and_state(run_obj, data_provided, state_identity):
     return data, state, state_loaded
 
 
-def handle_method_or_step_body(body, data, state):
+def handle_method_or_step_body(body, data, state, namespace):
     for item in body:
-        result = handle_item(item, data, state)
+        result = handle_item(item, data, state, namespace)
         if isinstance(result, StepReturnData):
             return result
 
@@ -41,15 +40,15 @@ def body_items_after_node(body_section, node_name):
     return body_section[node_idx + 1:]
 
 
-def handle_item(item, data, state):
-    return handler_for_tag[item.tag](item, data, state)
+def handle_item(item, data, state, namespace):
+    return handler_for_tag[item.tag](item, data, state, namespace)
 
 
-def handle_step(step, data, state):
+def handle_step(step, data, state, namespace):
     if not hasattr(step, 'name'):
         import ipdb; ipdb.set_trace()
     state.node = step.name  # New rules: all steps must have names, all names must be unique within the method
-    results = handle_method_or_step_body(step._value[MethodKeyword.BODY], data, state)
+    results = handle_method_or_step_body(step._value[MethodKeyword.BODY], data, state, namespace)
     if isinstance(results, StepReturnData):
         return results
     if MethodKeyword.RETURN in step.keys():
@@ -57,19 +56,18 @@ def handle_step(step, data, state):
         return StepReturnData(return_data, state)
 
 
-def handle_action(action, data, state):
+def handle_action(action, data, state, namespace):
     return run_executor(
-        executor=IdentifiedExecutorStore.use(action.identity),  # todo: document loader context
+        executor=namespace.get_executor(action.identity),
         action_or_method=action,
         data=data,
         state=state
     )
 
 
-def handle_method(method, data, state):
-    from ..stores.method import MethodStore
+def handle_method(method, data, state, namespace):
     return run_executor(
-        executor=MethodStore.load(method.identity),  # todo: document loader context
+        executor=namespace.get_method(method.identity),
         action_or_method=method,
         data=data,
         state=state
@@ -163,7 +161,7 @@ def load_asset(asset_tag, data, state):
     return Asset(asset_tag.value, data, state).value
 
 
-def handle_state(state_tag, data, state):
+def handle_state(state_tag, data, state, namespace):
     data_updates = dict()
     for key, value in state_tag.items():
         if isinstance(value, YAMLConfiguredObject):

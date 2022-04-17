@@ -1,6 +1,6 @@
 - !META
   domain: specifications/testing
-  method: array_yaml_spec
+  name: array_yaml_spec
   version: 1.0
   status: development
 

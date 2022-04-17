@@ -1,9 +1,7 @@
-import datetime
 import json
 
 from django.test import TestCase, Client
 
-from ..content_root.examples.hello_world.say_hello import say_hello_1_0
 from ...constants.payload import PayloadKey
 from ...models.payload import Payload, Response
 from ...utils.payload import is_uuid
@@ -15,10 +13,12 @@ class RunApiTestCase(TestCase):
         self.client = Client()
 
     def test_run_api(self):
+        namespace = 'flowly.tests.content_root.examples'
         method = 'examples::hello_world==1.0'
         payload = {
-            'method': method,
-            'data': {
+            PayloadKey.METHOD: method,
+            PayloadKey.NAMESPACE: 'flowly.tests.content_root.examples',
+            PayloadKey.DATA: {
                 'name': 'Alia'
             }
         }
@@ -29,7 +29,7 @@ class RunApiTestCase(TestCase):
         assert Response.objects.count() == 0
         result = self.client.post(*api_args, **api_kwargs).json()
         assert result[PayloadKey.REQUEST][PayloadKey.METHOD] == method
-        assert result[PayloadKey.REQUEST][PayloadKey.NODE] is None
+        assert result[PayloadKey.REQUEST][PayloadKey.NAMESPACE] == namespace
         assert is_uuid(result[PayloadKey.REQUEST][PayloadKey.STATE])
         assert result[PayloadKey.REQUEST][PayloadKey.COMPLETED] is True
         assert result[PayloadKey.DATA] == {'response': 'Hello, Alia!'}
@@ -52,10 +52,12 @@ class RunApiTestCase(TestCase):
         assert Response.objects.count() == 1
 
     def test_multi_step_api_run(self):
+        namespace = 'flowly.tests.content_root.sales'
         method = 'sales/cash::make_cash_sale==1.0'
         payload = {
-            'method': method,
-            'data': {
+            PayloadKey.METHOD: method,
+            PayloadKey.NAMESPACE: namespace,
+            PayloadKey.DATA: {
                 'customer': 'finance/lists::CUST-123',
                 'items': ['sales/items::ITEM-777', 'sales/items::ITEM-888', 'sales/items::ITEM-999']
             }
@@ -66,7 +68,7 @@ class RunApiTestCase(TestCase):
         # first step
         result = self.client.post(*api_args, **api_kwargs).json()
         assert result[PayloadKey.REQUEST][PayloadKey.METHOD] == method
-        assert result[PayloadKey.REQUEST][PayloadKey.NODE] == 'calculate_total'
+        assert result[PayloadKey.REQUEST][PayloadKey.NAMESPACE] == namespace
         assert is_uuid(result[PayloadKey.REQUEST][PayloadKey.STATE])
         assert result[PayloadKey.REQUEST][PayloadKey.COMPLETED] is False
         assert result[PayloadKey.DATA] == {'order_total': 3.14}
@@ -74,19 +76,19 @@ class RunApiTestCase(TestCase):
                                            k != PayloadKey.COMPLETED}
         assert PayloadKey.TIMESTAMP in result
         first_run_state_id = result[PayloadKey.REQUEST][PayloadKey.STATE]
-        first_run_node = result[PayloadKey.NEXT][PayloadKey.NODE]
 
         # second step
         payload = {
             PayloadKey.METHOD: method,
+            PayloadKey.NAMESPACE: namespace,
             PayloadKey.DATA: {'cash_tendered': 5.00},
             PayloadKey.STATE: first_run_state_id,
-            PayloadKey.NODE: first_run_node,
+            PayloadKey.NAMESPACE: namespace,
         }
         api_args = '/api/run/', json.dumps(payload)
         result2 = self.client.post(*api_args, **api_kwargs).json()
         assert result2[PayloadKey.REQUEST][PayloadKey.METHOD] == method
-        assert result2[PayloadKey.REQUEST][PayloadKey.NODE] == 'create_sale'
+        assert result2[PayloadKey.REQUEST][PayloadKey.NAMESPACE] == namespace
         assert is_uuid(result2[PayloadKey.REQUEST][PayloadKey.STATE])
         assert result2[PayloadKey.REQUEST][PayloadKey.COMPLETED] is True
         assert result2[PayloadKey.DATA] == {'customer': 'finance/lists::CUST-123',

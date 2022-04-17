@@ -21,7 +21,7 @@
     input: specifications/testing::simple_yaml_spec==1.0
     body:
       - !Action
-        id: specifications/testing::calculate_total==1.0
+        id: flowly.tests.content_root.specifications++testing::calculate_total==1.0
         customer: !Material customer
         items: !Materials items
         output>>: !State order_total
@@ -30,10 +30,10 @@
 
   - !Step
     name: create_sale
-    input: specifications/testing::cash_tendered==1.0
+    input: flowly.tests.content_root.specifications++testing::cash_tendered==1.0
     body:
       - !Action
-        id: core/math::subtract==1.0
+        id: flowly.tests.content_root.core++math::subtract==1.0
         left: !Data cash_tendered
         right: !State order_total
         output>>: !State change_due

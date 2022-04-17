@@ -1,6 +1,5 @@
-from ..constants.identity import IdentityDelimeter, MetaSectionKey
-from ..constants.runtime import IdentityConfigsKey
-from ..runtime import IdentityConfigs
+from ..constants.document import MetaSectionKey
+from ..constants.identity import IdentityDelimeter
 
 
 def deconstruct_identity(identity):

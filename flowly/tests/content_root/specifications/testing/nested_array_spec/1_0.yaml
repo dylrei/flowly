@@ -1,6 +1,6 @@
 - !META
   domain: specifications/testing
-  method: nested_array_spec
+  name: nested_array_spec
   version: 1.0
   status: development
 
