@@ -1,0 +1,8 @@
+- !META
+  domain: core/method
+  name: return_section
+  version: 1.0
+  status: development
+
+- !INPUT
+  data_type: object
