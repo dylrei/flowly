@@ -3,7 +3,7 @@ import datetime
 
 import pytest
 
-from ..content_root.sales.create_sale import create_sale_1_0
+from ..content_root.sales import create_sale
 from ..content_root.specifications.testing import calculate_total
 from ...constants.payload import PayloadKey
 from ...stores.method import MethodStore
