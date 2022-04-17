@@ -20,7 +20,6 @@ class RunMethod(View):
             payload = Payload.objects.get(md5=payload_hash)
             return JsonResponse(dict(payload.response.data, **{PayloadKey.DUPLICATE: True}))
         except Payload.DoesNotExist:
-            payload = Payload.objects.create(md5=payload_hash)
             namespace = NameStore.get_namespace(payload_data[PayloadKey.NAMESPACE])
             method_executor = namespace.get_method(payload_data[PayloadKey.METHOD])
             response_data = method_executor.run(
@@ -28,5 +27,6 @@ class RunMethod(View):
                 state_identity=payload_data.get(PayloadKey.STATE),
                 namespace=namespace
             )
+            payload = Payload.objects.create(md5=payload_hash)
             Response.objects.create(payload=payload, data=response_data)
             return JsonResponse(dict(payload.response.data, **{PayloadKey.DUPLICATE: False}), encoder=DjangoJSONEncoder)
