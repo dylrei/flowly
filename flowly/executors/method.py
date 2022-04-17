@@ -57,13 +57,18 @@ class State(Data):
 
 
 class MethodExecutor(object):
-    def __init__(self, identity, loaded_yaml):
+    def __init__(self, identity, loaded_yaml, namespace=None):
         self._identity = identity
         self._loaded_yaml = loaded_yaml
+        self._namespace = namespace
 
     @property
     def identity(self):
         return self._identity
+
+    @property
+    def namespace(self):
+        return self._namespace
 
     @property
     def meta_section(self):
