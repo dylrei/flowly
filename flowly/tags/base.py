@@ -1,6 +1,6 @@
 import yaml
 
-from flowly.constants.method import MethodKeyword
+from ..constants.method import MethodKeyword
 
 
 class YAMLConfiguredObject(object):

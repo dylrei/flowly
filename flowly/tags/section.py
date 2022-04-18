@@ -1,5 +1,5 @@
-from flowly.constants.tags import TagName
-from flowly.documents.tags.base import YAMLConfiguredObject
+from .base import YAMLConfiguredObject
+from ..constants.tags import TagName
 
 
 class MetaTag(YAMLConfiguredObject):

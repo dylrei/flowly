@@ -6,6 +6,7 @@ from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..models import Run
 from ..models.state import RunState
+from ..utils.json import preserialize, unfloat
 from ..utils.method import handle_method_or_step_body, render_tag_payload, provide_return, StepReturnData, \
     load_data_and_state, body_items_after_node
 
@@ -16,10 +17,8 @@ class Data(object):
         self.run = run_obj
         self.node = node
         if data is not None:
-            self.latest_return = data.get('latest_return', {})
-            self._value = deepcopy({k: w for k, w in data.items() if k != 'latest_return'})
+            self._value = unfloat(deepcopy(data))
         else:
-            self.latest_return = dict()
             self._value = dict()
 
     @property
@@ -31,12 +30,12 @@ class Data(object):
         return self.run.method
 
     def update(self, new_data):
-        self._value.update(new_data)
+        self._value.update(unfloat(new_data))
 
     def __getitem__(self, item):
-        if item not in self._value:
+        if item not in self.value:
             import ipdb; ipdb.set_trace()
-        return self._value[item]
+        return self.value[item]
 
     def __setitem__(self, key, value):
         raise RuntimeError(f'You may not set values directly on {self.__class__.__name__}, use '
@@ -50,7 +49,7 @@ class State(Data):
     def persist(self):
         RunState.objects.create(
             identity=self.identity,
-            data=self.value,
+            data=preserialize(self.value),
             run=self.run,
             node=self.node
         )
@@ -118,7 +117,7 @@ class MethodExecutor(object):
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: False,
                 },
-                PayloadKey.DATA: result.data,
+                PayloadKey.DATA: preserialize(result.data),
                 PayloadKey.NEXT: {
                     PayloadKey.METHOD: result.resume_method,
                     PayloadKey.NAMESPACE: namespace.unique_name,
@@ -133,12 +132,12 @@ class MethodExecutor(object):
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: True,
                 },
-                PayloadKey.DATA: render_tag_payload(self.return_section, data, state),
+                PayloadKey.DATA: preserialize(render_tag_payload(self.return_section, data, state)),
                 PayloadKey.NEXT: {},
             }
             run_obj.completed = datetime.now(tz=timezone.utc)
             run_obj.save()
-        state.update({'next': return_data['next']})
+        state.update({PayloadKey.NEXT: return_data[PayloadKey.NEXT]})
         return provide_return(return_data, state)
 
 

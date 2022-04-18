@@ -3,16 +3,19 @@ from django.test import TestCase
 from flowly.constants.payload import PayloadKey
 from flowly.constants.testing import TestingKeyword
 from flowly.stores.names import NameStore
+from flowly.utils.json import unfloat
 from flowly.utils.payload import is_uuid
 
 
 class TestMethodBase(TestCase):
-    def run_test_cases(self, namespace, method_identity, test_cases):
+    def run_test_cases(self, namespace, method_identity, test_cases, break_before=False):
         method = namespace.get_method(method_identity)
         state = None
+        if break_before:
+            import ipdb; ipdb.set_trace()
         for tc in test_cases:
             result = method.run(
-                data_provided=tc[TestingKeyword.PROVIDED],
+                data_provided=unfloat(tc[TestingKeyword.PROVIDED]),
                 state_identity=state,
                 namespace=namespace
             )

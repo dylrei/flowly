@@ -81,7 +81,7 @@ class RunApiTestCase(TestCase):
         payload = {
             PayloadKey.METHOD: method,
             PayloadKey.NAMESPACE: namespace,
-            PayloadKey.DATA: {'cash_tendered': 5.00},
+            PayloadKey.DATA: {'cash_tendered': 20.00},
             PayloadKey.STATE: first_run_state_id,
         }
         api_args = '/api/run/', json.dumps(payload)
@@ -92,6 +92,8 @@ class RunApiTestCase(TestCase):
         assert result2[PayloadKey.REQUEST][PayloadKey.COMPLETED] is True
         assert result2[PayloadKey.DATA] == {'customer': 'finance/lists::CUST-123',
                                             'order_number': 'ORD-1234',
-                                            'total_cost': 3.14}
+                                            'total_cost': 3.14,
+                                            'cash_tendered': 20.00,
+                                            'change_due': 16.86}
         assert result2[PayloadKey.NEXT] == {}
         assert PayloadKey.TIMESTAMP in result2

@@ -72,7 +72,7 @@ class Namespace(object):
 
 
     def load_methods(self):
-        from flowly.documents.loader import load_yaml_document
+        from ..tags.loader import load_yaml_document
         # Note: because we import descendants before ancestors, any child namespaces are already registered
         for method_path in find_yaml_files(self):
             with open(method_path, 'r') as document:

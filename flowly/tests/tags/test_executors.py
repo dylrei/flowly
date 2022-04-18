@@ -1,6 +1,6 @@
 from . import run_tag_tests
 from ...constants.tags import TagName
-from ...documents.loader import _load_yaml
+from ...tags.loader import _load_yaml
 from ...stores.names import NameStore
 
 

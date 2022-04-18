@@ -50,3 +50,5 @@
   customer: !State customer
   order_number: !State order_number
   total_cost: !State order_total
+  cash_tendered: !Data cash_tendered
+  change_due: !State change_due

@@ -1,5 +1,5 @@
 from .base import YAMLConfiguredObject
-from ...constants.tags import TagName
+from ..constants.tags import TagName
 
 
 class StateTag(YAMLConfiguredObject):

@@ -4,7 +4,9 @@
 from flowly.stores.names import NameStore
 
 # Import child (not grandchild) namespaces
-from ffio.public import public_namespace
+from .core import ffio_core_namespace
+from .public import public_namespace
+
 
 ffio_namespace = NameStore.register(
     unique_name=__name__,

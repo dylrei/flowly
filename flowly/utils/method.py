@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 
+from .json import preserialize, unfloat
 from ..constants.method import MethodKeyword
 from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
-from ..documents.tags import YAMLConfiguredObject
 from ..models.state import RunState
 from ..stores.material import MaterialStore, Material, Asset
+from ..tags import YAMLConfiguredObject
 
 
 def load_data_and_state(run_obj, data_provided, state_identity):
@@ -143,6 +144,7 @@ def run_executor(executor, action_or_method, data, state):
     result = executor(**exec_kwargs)
     if result is not None:
         if action_or_method.output_target:
+            result = unfloat(result)
             target_key = action_or_method.output_target.value
             if action_or_method.output_target.tag == TagName.State:
                 state.update({target_key: result})
@@ -177,7 +179,7 @@ def handle_state(state_tag, data, state, namespace):
 
 def provide_return(return_data, state):
     state.persist()
-    return dict(return_data, **{PayloadKey.TIMESTAMP: datetime.now(timezone.utc)})
+    return dict(preserialize(return_data), **{PayloadKey.TIMESTAMP: datetime.now(timezone.utc)})
 
 
 handler_for_tag = {

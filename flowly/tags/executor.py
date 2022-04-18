@@ -1,6 +1,6 @@
 from .base import YAMLConfiguredObject
-from ...constants.method import MethodKeyword
-from ...constants.tags import TagName
+from ..constants.method import MethodKeyword
+from ..constants.tags import TagName
 
 
 class ExecutorTag(YAMLConfiguredObject):

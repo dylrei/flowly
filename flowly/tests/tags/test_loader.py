@@ -1,6 +1,6 @@
 from ...constants.tags import TagName
-from ...documents.loader import load_yaml_document
-from ...documents.tags import ActionTag
+from ...tags.loader import load_yaml_document
+from ...tags.executor import ActionTag
 
 
 def test_load_yaml():

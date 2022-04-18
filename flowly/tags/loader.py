@@ -1,6 +1,6 @@
 import yaml
 
-from .tags import get_klass_for_tag
+from . import get_klass_for_tag
 
 _loader = yaml.SafeLoader
 
