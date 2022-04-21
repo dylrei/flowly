@@ -1,0 +1,10 @@
+- !META
+  domain: sales/cash
+  name: cash_tendered
+  version: 1.0
+  status: testing
+
+- !INPUT
+  cash_tendered:
+    data_type: number
+    required: true

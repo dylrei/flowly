@@ -19,10 +19,10 @@ def validate_expected_and_required_values(provided_values, expected_values=None,
     unexpected = provided - expected
 
     if missing:
-        raise RuntimeError(f'Required {descriptor}(s) missing: {missing}; Provided: {provided}')
+        raise RuntimeError(f'Required {descriptor}(s) missing: {missing}; Provided: {provided or None}')
 
     if unexpected:
-        raise RuntimeError(f'Unexpected {descriptor}(s) provided: {unexpected}; Expected: {expected}')
+        raise RuntimeError(f'Unexpected {descriptor}(s) provided: {unexpected}; Expected: {expected or None}')
 
     return True
 

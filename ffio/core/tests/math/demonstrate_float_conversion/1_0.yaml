@@ -7,7 +7,7 @@
 - !INPUT
   numbers_to_multiply:
     data_type: array
-    member_data_type: float
+    member_data_type: number
 
 - !BODY
   - !Action

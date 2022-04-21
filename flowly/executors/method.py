@@ -2,6 +2,7 @@ import uuid
 from copy import deepcopy
 from datetime import timezone, datetime
 
+from .validator import validate_input
 from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..models import Run
@@ -54,8 +55,7 @@ class State(Data):
             node=self.node
         )
 
-
-class MethodExecutor(object):
+class YAMLDocument(object):
     def __init__(self, identity, loaded_yaml, namespace=None):
         self._identity = identity
         self._loaded_yaml = loaded_yaml
@@ -77,6 +77,8 @@ class MethodExecutor(object):
     def input_section(self):
         return self._loaded_yaml[TagName.INPUT]._value
 
+
+class MethodExecutor(YAMLDocument):
     @property
     def body_section(self):
         return self._loaded_yaml[TagName.BODY]._value
@@ -89,12 +91,14 @@ class MethodExecutor(object):
     def sanity_check(self, data, state):
         pass
 
-    def validate_input(self, data):
-        pass
-
     def run(self, data_provided=None, state_identity=None, namespace=None):
         self.sanity_check(data_provided, state_identity)
-        self.validate_input(data_provided)
+        if state_identity is None:
+            # use the method input section to validate input
+            validate_input(self.input_section, data_provided, namespace)
+        else:
+            # todo: run step validation here, but for now, testing just before we run the step is good enough
+            pass
         run_obj = Run.objects.create(identity=str(uuid.uuid4()), method=self.identity)
         # "state" is data that persists across multiple Steps in the Run, it corresponds to the !State tag
         # "data" is data that is only available during the lifetime of this Step, it corresponds to the !Data tag

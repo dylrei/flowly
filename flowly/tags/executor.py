@@ -40,8 +40,18 @@ class StepTag(YAMLConfiguredObject):
     def name(self):
         return self._value['name']
 
+    def get_input_spec(self, namespace):
+        input_config = self.value.get('input')
+        if isinstance(input_config, dict):
+            return input_config
+        elif isinstance(input_config, str):
+            return namespace.get_specification(input_config).input_section
+        else:
+            return {}
+
+
 class ValidatorTag(YAMLConfiguredObject):
     tag_name = TagName.Validator
 
     def validate(self, node, namespace):
-        return namespace.get_validator(self._value[MethodKeyword.IDENTITY]).validate(node, namespace)
+        return namespace.get_validator(self._value[MethodKeyword.IDENTITY]).validate(node)

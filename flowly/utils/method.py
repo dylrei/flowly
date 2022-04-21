@@ -4,6 +4,7 @@ from .json import preserialize, unfloat
 from ..constants.method import MethodKeyword
 from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
+from ..executors.validator import validate_input
 from ..models.state import RunState
 from ..stores.material import MaterialStore, Material, Asset
 from ..tags import YAMLConfiguredObject
@@ -48,6 +49,9 @@ def handle_item(item, data, state, namespace):
 def handle_step(step, data, state, namespace):
     if not hasattr(step, 'name'):
         raise RuntimeError(f'Step requires a name, none provided')
+    step_input_spec = step.get_input_spec(namespace)
+    if step_input_spec:
+        validate_input(step_input_spec, data.value, namespace)
     state.node = step.name  # New rules: all steps must have names, all names must be unique within the method
     results = handle_method_or_step_body(step._value[MethodKeyword.BODY], data, state, namespace)
     if isinstance(results, StepReturnData):

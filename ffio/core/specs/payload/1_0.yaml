@@ -1,0 +1,23 @@
+- !META
+  domain: core/specs
+  name: payload
+  version: 1.0
+  status: testing
+
+- !INPUT
+  method:
+    data_type: string
+    string_format: identity
+    required: true
+  namespace:
+    data_type: string
+    string_format: namespace
+    required: true
+  data:
+    data_type: object
+    required: false
+    member_spec: null
+  state:
+    data_type: string
+    string_format: uuid
+    required: false

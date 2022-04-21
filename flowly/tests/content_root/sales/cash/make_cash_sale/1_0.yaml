@@ -12,25 +12,26 @@
     member_data_type: record
 
 - !BODY
-  # add inputs to state so we can use them next step
-  - !State
-    customer: !Data customer
-    items: !Data items
+  # First step has a return, but no input (uses method input)
   - !Step
     name: calculate_total
-    input: specifications/testing::simple_yaml_spec==1.0
     body:
       - !Action
         id: flowly.tests.content_root.specifications++testing::calculate_total==1.0
         customer: !Material customer
         items: !Materials items
         output>>: !State order_total
+      # add inputs to state so we can use them next step
+      - !State
+        customer: !Data customer
+        items: !Data items
     return:
       order_total: !State order_total
 
+  # Last step has an input, but no return (uses method return)
   - !Step
     name: create_sale
-    input: flowly.tests.content_root.specifications++testing::cash_tendered==1.0
+    input: sales/cash::cash_tendered==1.0
     body:
       - !Action
         id: flowly.tests.content_root.core++math::subtract==1.0
@@ -46,6 +47,7 @@
         items: !Materials items
         total_cost: !State order_total
         output>>: !State order_number
+
 - !RETURN
   customer: !State customer
   order_number: !State order_number

@@ -5,9 +5,8 @@
   status: testing
 
 - !INPUT
-  customer:
-    name: string
-    required: true
+  name:
+    data_type: string
 
 - !BODY
   - !Action

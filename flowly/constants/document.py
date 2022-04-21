@@ -26,13 +26,14 @@ class DocumentStatus(ConstantNamespace):
 
 class DataType(ConstantNamespace):
     STRING = 'string'
+    NUMBER = 'number'
     INTEGER = 'integer'
     FLOAT = 'float'
     BOOLEAN = 'boolean'
     OBJECT = 'object'
     ARRAY = 'array'
-    MATERIAL = 'material'
-    NODE = 'node'
+    RECORD = 'record'
+    # NODE = 'node'
 
 
 class DocumentSectionName(ConstantNamespace):

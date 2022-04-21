@@ -1,5 +1,7 @@
 from flowly.constants.identity import IdentityDelimeter
+from flowly.constants.names import NamespaceCollection
 from flowly.constants.tags import TagName
+from flowly.executors.method import YAMLDocument
 from flowly.utils.identity import construct_identity
 from flowly.utils.names import find_yaml_files
 
@@ -32,40 +34,54 @@ class Namespace(object):
         return self._methods
 
     @property
+    def executors(self):
+        return self._executors
+
+    @property
     def source(self):
         return self._source
 
+    def _resolve_identity(self, identity, collection):
+        if IdentityDelimeter.NAMESPACE in identity:
+            namespace_name, local_identity = identity.split(IdentityDelimeter.NAMESPACE)
+        else:
+            namespace_name = self.unique_name
+            local_identity = identity
+        if namespace_name == self.unique_name:
+            if local_identity in getattr(self, collection):
+                return getattr(self, collection)[local_identity]
+            else:
+                raise RuntimeError(f'{identity} does not belong to {collection} collection of namespace {self.unique_name}')
+        else:
+            if NameStore.exists(namespace_name):
+                return NameStore.get_namespace(namespace_name)._resolve_identity(local_identity, collection)
+            else:
+                raise RuntimeError(f'Unable to resolve namespace {namespace_name} in {identity}')
+
     def get_method(self, identity):
         from flowly.executors.method import MethodExecutor
-        if identity not in self.methods:
-            raise RuntimeError(f'Method {identity} not found in Namespace {self.unique_name}')
         return MethodExecutor(
             identity=identity,
             namespace=self,
-            loaded_yaml=self.methods[identity]
+            loaded_yaml=self._resolve_identity(identity, NamespaceCollection.METHODS)
         )
 
     def get_executor(self, identity):
-        if identity not in self._executors:
-            # does this belong to a different namespace?
-            if IdentityDelimeter.NAMESPACE in identity:
-                namespace_identity, local_identity = identity.split(IdentityDelimeter.NAMESPACE)
-                if NameStore.exists(namespace_identity):
-                    return NameStore.get_namespace(namespace_identity).get_executor(local_identity)
-            import ipdb; ipdb.set_trace()
-        return self._executors[identity]
+        return self._resolve_identity(identity, NamespaceCollection.EXECUTORS)
 
     def get_validator(self, identity):
         from flowly.executors.validator import InputValidator
-        if identity not in self.methods:
-            raise RuntimeError(f'Validator {identity} not found in Namespace {self.unique_name}')
         return InputValidator(
+            namespace=self,
             identity=identity,
-            loaded_yaml=self.methods[identity]
+            loaded_yaml=self._resolve_identity(identity, NamespaceCollection.METHODS)
         )
 
-    def is_namespace(self, path):
-        pass
+    def get_specification(self, identity):
+        return YAMLDocument(
+            identity=identity,
+            loaded_yaml=self._resolve_identity(identity, NamespaceCollection.METHODS)
+        )
 
     def register(self, identity, fx):
         self._executors[identity] = fx
@@ -84,6 +100,7 @@ class Namespace(object):
 class NameStore(object):
     @classmethod
     def exists(cls, namespace_identity):
+        # todo: check if this server is canonical for this namespace
         return namespace_identity in _names
 
 
