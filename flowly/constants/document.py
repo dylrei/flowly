@@ -28,6 +28,7 @@ class DataType(ConstantNamespace):
     STRING = 'string'
     INTEGER = 'integer'
     FLOAT = 'float'
+    NUMBER = 'number'
     BOOLEAN = 'boolean'
     OBJECT = 'object'
     ARRAY = 'array'

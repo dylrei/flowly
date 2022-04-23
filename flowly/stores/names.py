@@ -1,9 +1,12 @@
+from collections import defaultdict
+
 from flowly.constants.identity import IdentityDelimeter
 from flowly.constants.tags import TagName
 from flowly.utils.identity import construct_identity
 from flowly.utils.names import find_yaml_files
 
 _names = dict()
+_models = defaultdict(list)
 
 class Namespace(object):
     def __init__(self, unique_name, file_path, canonical, source):
@@ -13,7 +16,9 @@ class Namespace(object):
         self._source = source
         self._methods = dict()
         self._executors = dict()
+        self._models = dict()
         self.load_methods()
+        self.load_models()
 
     @property
     def unique_name(self):
@@ -52,7 +57,8 @@ class Namespace(object):
                 namespace_identity, local_identity = identity.split(IdentityDelimeter.NAMESPACE)
                 if NameStore.exists(namespace_identity):
                     return NameStore.get_namespace(namespace_identity).get_executor(local_identity)
-            import ipdb; ipdb.set_trace()
+            raise RuntimeError(f'Executor {identity} not registered in Namespace {self.unique_name}. Is the '
+                               f'containing module imported in the {self.unique_name} __init__.py file?')
         return self._executors[identity]
 
     def get_validator(self, identity):
@@ -61,6 +67,7 @@ class Namespace(object):
             raise RuntimeError(f'Validator {identity} not found in Namespace {self.unique_name}')
         return InputValidator(
             identity=identity,
+            namespace=self,
             loaded_yaml=self.methods[identity]
         )
 
@@ -80,6 +87,50 @@ class Namespace(object):
                 method_identity = construct_identity(method[TagName.META].value)
                 self._methods[method_identity] = method
 
+    def load_models(self):
+        # we load this way because Django models will load before our namespaces, thus the need to
+        # defer loading until the namespace actually exists
+        for model in _models[self.unique_name]:
+            model.namespace = self
+            self._models[model.barcode_prefix] = model
+        # material models should only be accessed via the namespace
+        del _models[self.unique_name]
+
+    def _load_object(self, identity):
+        barcode = identity.split(IdentityDelimeter.NAMESPACE)[-1]
+        for barcode_prefix, model in self._models.items():
+            if barcode.startswith(barcode_prefix):
+                try:
+                    return model.objects.get(**{model.barcode_field_name: barcode})
+                except model.DoesNotExist:
+                    import ipdb; ipdb.set_trace()
+                    raise RuntimeError(f'adf')
+        raise RuntimeError(f'Unable to load Material {identity}: no model for barcode prefix {barcode_prefix}')
+
+    def load_one_material(self, identity):
+        if isinstance(identity, list):
+            raise RuntimeError(f'Attempt to use !Material to load array of identities: {identity}')
+        return self._load_object(identity)
+
+    def load_one_asset(self, identity):
+        if isinstance(identity, list):
+            raise RuntimeError(f'Attempt to use !Asset to load array of identities: {identity}')
+        # todo: load object in a read-only way
+        return self._load_object(identity)
+
+    def load_many_materials(self, identities):
+        if isinstance(identities, str):
+            raise RuntimeError(f'Attempt to use !Materials to load single identity: {identities}')
+        return [self._load_object(identity) for identity in identities]
+
+    def load_many_assets(self, identities):
+        if isinstance(identities, str):
+            raise RuntimeError(f'Attempt to use !Assets to load single identity: {identities}')
+        # todo: load objects in a read-only way
+        return [self._load_object(identity) for identity in identities]
+
+
+
 
 class NameStore(object):
     @classmethod
@@ -90,9 +141,11 @@ class NameStore(object):
     @classmethod
     def register(cls, unique_name, file_path, canonical, source):
         global _names
+        if file_path.endswith('/__init__.py'):
+            file_path = file_path[:-len('/__init__.py')]
+
         if unique_name in _names:
-            raise RuntimeError(f'Namespace collision: {unique_name}; First registration from: '
-                               f'{_names[unique_name].file_path}; Second registration from: {file_path}')
+            return _names[unique_name]
         else:
             _names[unique_name] = Namespace(
                 unique_name=unique_name,
@@ -101,6 +154,11 @@ class NameStore(object):
                 source=source
             )
             return _names[unique_name]
+
+    @classmethod
+    def register_model(cls, namespace_identity, model):
+        global _models
+        _models[namespace_identity].append(model)
 
     @classmethod
     def get_namespace(cls, ns_identity):

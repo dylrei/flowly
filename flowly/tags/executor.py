@@ -44,4 +44,4 @@ class ValidatorTag(YAMLConfiguredObject):
     tag_name = TagName.Validator
 
     def validate(self, node, namespace):
-        return namespace.get_validator(self._value[MethodKeyword.IDENTITY]).validate(node, namespace)
+        return namespace.get_validator(self._value[MethodKeyword.IDENTITY]).validate(node)

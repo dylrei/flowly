@@ -14,3 +14,4 @@ sales_namespace = NameStore.register(
 
 # Import modules containing actions for this namespace
 from . import create_sale
+from .service import approve_service_order, create_service_order

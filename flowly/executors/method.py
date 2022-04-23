@@ -8,7 +8,7 @@ from ..models import Run
 from ..models.state import RunState
 from ..utils.json import preserialize, unfloat
 from ..utils.method import handle_method_or_step_body, render_tag_payload, provide_return, StepReturnData, \
-    load_data_and_state, body_items_after_node
+    load_data_and_state, body_items_after_node, render_tag_values
 
 
 class Data(object):
@@ -104,8 +104,7 @@ class MethodExecutor(object):
                 next_steps = body_items_after_node(self.body_section, state.node)
             else:
                 # load that method with the state it returned
-                import ipdb; ipdb.set_trace()
-                pass
+                raise NotImplemented('todo')
         else:
             next_steps = self.body_section
         result = handle_method_or_step_body(next_steps, data, state, self.namespace)
@@ -117,7 +116,7 @@ class MethodExecutor(object):
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: False,
                 },
-                PayloadKey.DATA: preserialize(result.data),
+                PayloadKey.DATA: preserialize(render_tag_values(result.data, data, state)),
                 PayloadKey.NEXT: {
                     PayloadKey.METHOD: result.resume_method,
                     PayloadKey.NAMESPACE: namespace.unique_name,
@@ -132,7 +131,12 @@ class MethodExecutor(object):
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: True,
                 },
-                PayloadKey.DATA: preserialize(render_tag_payload(self.return_section, data, state)),
+                PayloadKey.DATA: preserialize(
+                    render_tag_values(
+                        render_tag_payload(self.return_section, data, state, self.namespace),
+                        data, state
+                    ),
+                ),
                 PayloadKey.NEXT: {},
             }
             run_obj.completed = datetime.now(tz=timezone.utc)

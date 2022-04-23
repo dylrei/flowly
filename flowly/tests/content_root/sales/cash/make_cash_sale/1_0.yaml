@@ -12,7 +12,7 @@
     member_data_type: record
 
 - !BODY
-  # add inputs to state so we can use them next step
+  # NB: we aren't using materials here, none of these items and customers have associated db records
   - !State
     customer: !Data customer
     items: !Data items
@@ -22,8 +22,8 @@
     body:
       - !Action
         id: flowly.tests.content_root.specifications++testing::calculate_total==1.0
-        customer: !Material customer
-        items: !Materials items
+        customer: !Data customer
+        items: !Data items
         output>>: !State order_total
     return:
       order_total: !State order_total
@@ -42,8 +42,8 @@
         # value provided in the current request
         funds_applied: !Data cash_tendered
         # these values are persisted from the previous step / request
-        customer: !Material customer
-        items: !Materials items
+        customer: !State customer
+        items: !State items
         total_cost: !State order_total
         output>>: !State order_number
 - !RETURN

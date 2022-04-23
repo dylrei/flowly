@@ -1,0 +1,47 @@
+- !META
+  domain: sales/service
+  name: start_service_order
+  version: 1.0
+  status: testing
+
+- !INPUT
+  - customer:
+      data_type: record
+    services:
+      data_type: array
+      member_data_type: record
+  - approved:
+      data_type: boolean
+
+- !BODY
+  - !Step
+    name: create_pending_service_order
+#    input: sales/specs::create_service_order==1.0
+    body:
+      - !State
+        customer: !Data customer
+      - !Action
+        id: flowly.tests.content_root.sales++service::create_service_order==1.0
+        customer: !Material customer
+        services: !Materials services
+        output>>: !State service_order
+    return:
+      service_order:
+        identity: !State service_order.identity
+        number: !State service_order.unique_id
+        status: !State service_order.status
+
+  - !Step
+    name: approve_service_order
+#    input: sales/specs::approve_service_order==1.0
+    body:
+      - !Action
+        id: flowly.tests.content_root.sales++service::approve_service_order==1.0
+        service_order: !Material service_order
+        approved: !Data approved
+        output>>: !State service_order
+- !RETURN
+  service_order:
+    identity: !State service_order.identity
+    number: !State service_order.unique_id
+    status: !State service_order.status

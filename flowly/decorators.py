@@ -9,6 +9,13 @@ def identified_executor(identity):
     return registration_wrapper
 
 
+def flowly_material(namespace_identity):
+    def registration_wrapper(model):
+        NameStore.register_model(namespace_identity, model)
+        return model
+    return registration_wrapper
+
+
 def _find_namespace(fx):
     fx_module_path = fx.__module__
     module_path_elems = fx_module_path.split('.')

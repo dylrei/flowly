@@ -5,7 +5,6 @@ from ..constants.method import MethodKeyword
 from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..models.state import RunState
-from ..stores.material import MaterialStore, Material, Asset
 from ..tags import YAMLConfiguredObject
 
 
@@ -53,7 +52,7 @@ def handle_step(step, data, state, namespace):
     if isinstance(results, StepReturnData):
         return results
     if MethodKeyword.RETURN in step.keys():
-        return_data = render_tag_payload(step.value[MethodKeyword.RETURN], data, state)
+        return_data = render_tag_payload(step.value[MethodKeyword.RETURN], data, state, namespace)
         return StepReturnData(return_data, state)
 
 
@@ -62,7 +61,8 @@ def handle_action(action, data, state, namespace):
         executor=namespace.get_executor(action.identity),
         action_or_method=action,
         data=data,
-        state=state
+        state=state,
+        namespace=namespace
     )
 
 
@@ -75,8 +75,8 @@ def handle_method(method, data, state, namespace):
     )
 
 
-def render_object(obj_tag, data, state):
-    return render_for_tag[obj_tag.tag](obj_tag.value, data, state)
+def render_object(obj_tag, data, state, namespace):
+    return render_for_tag[obj_tag.tag](obj_tag.value, data, state, namespace)
 
 
 def load_material_id_or_ids(key_name, data, state):
@@ -85,23 +85,23 @@ def load_material_id_or_ids(key_name, data, state):
     return state[key_name] if key_name in state.keys() else data[key_name]
 
 
-def render_material(key_name, data, state):
-    return MaterialStore.load_one_material(identity=load_material_id_or_ids(key_name, data, state))
+def render_material(key_name, data, state, namespace):
+    return namespace.load_one_material(identity=load_material_id_or_ids(key_name, data, state))
 
 
-def render_asset(key_name, data, state):
-    return MaterialStore.load_one_asset(identity=load_material_id_or_ids(key_name, data, state))
+def render_asset(key_name, data, state, namespace):
+    return namespace.load_one_asset(identity=load_material_id_or_ids(key_name, data, state))
 
 
-def render_materials(key_name, data, state):
-    return MaterialStore.load_many_materials(identities=load_material_id_or_ids(key_name, data, state))
+def render_materials(key_name, data, state, namespace):
+    return namespace.load_many_materials(identities=load_material_id_or_ids(key_name, data, state))
 
 
-def render_assets(key_name, data, state):
-    return MaterialStore.load_many_assets(identities=load_material_id_or_ids(key_name, data, state))
+def render_assets(key_name, data, state, namespace):
+    return namespace.load_many_assets(identities=load_material_id_or_ids(key_name, data, state))
 
 
-def render_tag_payload(tag, data, state):
+def render_tag_payload(tag, data, state, namespace):
     output = dict()
     tag_data_source = tag.items
     if hasattr(tag, 'kwargs'):
@@ -120,18 +120,26 @@ def render_tag_payload(tag, data, state):
                         use_source = source
                         break
                 if use_source:
-                    output[key] = use_source[source_key]
+                    if '.' in source_key:
+                        source_key, attribute = source_key.split('.')
+                        item = use_source[source_key]
+                        if isinstance(item, dict):
+                            output[key] = item[attribute]
+                        else:
+                            output[key] = getattr(item, attribute)
+                    else:
+                        output[key] = use_source[source_key]
                 else:
                     if key == MethodKeyword.OUTPUT_TARGET:
-                        # we are setting a new key momentarily, but first we have to load the tag
-                        # not an error condition, nothing to do
+                        # we are setting a new key momentarily, but first we have to load the tag, which doesn't
+                        # yet contain the key -  not an error condition, nothing to do yet
                         pass
                     else:
                         import ipdb; ipdb.set_trace()
                         raise RuntimeError(f'Attempt to read a {value.tag} value that has not already been set; '
                                            f'key: {source_key}')
             elif value.tag in [TagName.Material, TagName.Asset, TagName.Materials, TagName.Assets]:
-                output[key] = render_object(value, data, state)
+                output[key] = render_object(value, data, state, namespace)
             else:
                 raise RuntimeError(f'No render implemented for source {value.tag}')
         else:
@@ -139,8 +147,8 @@ def render_tag_payload(tag, data, state):
     return output
 
 
-def run_executor(executor, action_or_method, data, state):
-    exec_kwargs = render_tag_payload(action_or_method, data, state)
+def run_executor(executor, action_or_method, data, state, namespace):
+    exec_kwargs = render_tag_payload(action_or_method, data, state, namespace)
     result = executor(**exec_kwargs)
     if result is not None:
         if action_or_method.output_target:
@@ -153,14 +161,6 @@ def run_executor(executor, action_or_method, data, state):
             else:
                 raise RuntimeError(f'No defined way to output to tag {action_or_method.output_target.tag}')
         return result
-
-
-def load_material(material_tag, data, state):
-    return Material(material_tag.value, data, state).value
-
-
-def load_asset(asset_tag, data, state):
-    return Asset(asset_tag.value, data, state).value
 
 
 def handle_state(state_tag, data, state, namespace):
@@ -180,6 +180,27 @@ def handle_state(state_tag, data, state, namespace):
 def provide_return(return_data, state):
     state.persist()
     return dict(preserialize(return_data), **{PayloadKey.TIMESTAMP: datetime.now(timezone.utc)})
+
+
+def render_tag_values(value, data, state):
+    if isinstance(value, dict):
+        return {k: render_tag_values(v, data, state) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [render_tag_values(item, data, state) for item in value]
+    elif isinstance(value, YAMLConfiguredObject):
+        if value.tag == TagName.Data:
+            source = data
+        elif value.tag == TagName.State:
+            source = state
+        if '.' in value.value:
+            source_key, attribute = value.value.split('.')
+            obj = source[source_key]
+            return getattr(obj, attribute)
+        else:
+            return source[value.value]
+    else:
+        return value
+
 
 
 handler_for_tag = {

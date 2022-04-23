@@ -1,4 +1,4 @@
-from flowly.executors.identified import identified_executor
+from flowly.decorators import identified_executor
 
 
 @identified_executor('math::subtract==production')

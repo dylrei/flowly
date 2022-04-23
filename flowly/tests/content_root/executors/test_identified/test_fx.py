@@ -1,4 +1,4 @@
-from .....executors.identified import identified_executor
+from .....decorators import identified_executor
 
 
 @identified_executor('executors/test_identified::test_fx==1.1')

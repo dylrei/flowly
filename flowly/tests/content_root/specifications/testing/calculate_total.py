@@ -1,4 +1,4 @@
-from .....executors.identified import identified_executor
+from .....decorators import identified_executor
 
 
 @identified_executor('testing::calculate_total==1.0')
