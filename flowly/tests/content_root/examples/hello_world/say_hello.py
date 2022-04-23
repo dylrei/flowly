@@ -1,4 +1,4 @@
-from flowly.executors.identified import identified_executor
+from flowly.decorators import identified_executor
 
 
 @identified_executor('examples/hello_world::say_hello==production')

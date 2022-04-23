@@ -7,7 +7,7 @@ class PayloadKey(ConstantNamespace):
     NEXT = 'next'
     METHOD = 'method'
     STATE = 'state'
-    NODE = 'node'
+    NAMESPACE = 'namespace'
     TIMESTAMP = 'timestamp'
     COMPLETED = 'completed'
     DUPLICATE = 'duplicate'

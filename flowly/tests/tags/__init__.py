@@ -1,4 +1,4 @@
-from flowly.documents.loader import load_yaml_document, _load_yaml
+from ...tags.loader import load_yaml_document, _load_yaml
 
 
 def load_yaml(document):

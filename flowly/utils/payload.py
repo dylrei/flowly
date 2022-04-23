@@ -23,7 +23,8 @@ def sort_and_jsonify_data(data):
     return json.dumps(data, sort_keys=True).encode('utf-8')
 
 
-def hash_data(data):
+def hash_request_body(request_body):
+    data = json.loads(request_body)
     return hashlib.md5(sort_and_jsonify_data(data)).hexdigest()
 
 

@@ -1,0 +1,19 @@
+- !META
+  domain: core/method
+  name: meta_section
+  version: 1.0
+  status: development
+
+- !INPUT
+  domain:
+    data_type: string
+    required: true
+  method:
+    data_type: string
+    required: true
+  version:
+    data_type: string
+    required: true
+  status:
+    data_type: string
+    required: true

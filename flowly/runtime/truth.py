@@ -1,4 +1,6 @@
-class SourceOfTruth(object):
+# I don't think I need this for this project any more, but it might be worth packaging up on its own
+
+class _SourceOfTruth(object):
     '''
     Sources of Truth are singletons that map specified keys to globally singular values
     that are immutable, once set (using public interfaces)

@@ -1,10 +1,10 @@
-from ...runtime.truth import SourceOfTruth
+from ...runtime.truth import _SourceOfTruth
 
 
 def test_source_of_truth():
     my_attr = 'my_attr'
 
-    class MySOT(SourceOfTruth):
+    class MySOT(_SourceOfTruth):
         managed_names = {
             my_attr: None
         }

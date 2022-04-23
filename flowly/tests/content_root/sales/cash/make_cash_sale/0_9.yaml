@@ -18,7 +18,7 @@
 #    input: specifications/testing::simple_yaml_spec==1.0
     body:
       - !Action
-        id: specifications/testing::calculate_total==1.0
+        id: flowly.tests.content_root.specifications++testing::calculate_total==1.0
         customer: !Material customer
         items: !Materials items
         output>>: !Data order_total
