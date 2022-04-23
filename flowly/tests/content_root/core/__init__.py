@@ -1,11 +1,17 @@
 from flowly.stores.names import NameStore
 
+
+# Import child (not grandchild) namespaces
+
+
 core_namespace = NameStore.register(
-    unique_name='core',
+    unique_name=__name__,
     file_path=__file__,
-    module_path=__name__,
     canonical='ff.flowflow.io',
     source='github.com:dylrei/flowly.git',
-    actions=list(),
-    namespaces=list()
 )
+
+
+# Import modules containing actions for this namespace
+if core_namespace:
+    from .math import subtract

@@ -1,11 +1,12 @@
 import pytest
 
-from ...stores.input_validation import InputValidatorStore
+from flowly.stores.names import NameStore
 
 
 def test_simple_input_validator():
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     identity = 'specifications/testing::simple_yaml_spec==1.0'
-    validator = InputValidatorStore.get_validator(identity)
+    validator = namespace.get_validator(identity)
 
     valid_examples = [
         {
@@ -56,8 +57,9 @@ def test_simple_input_validator():
 
 
 def test_validate_array_spec():
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     identity = 'specifications/testing::array_yaml_spec==1.0'
-    validator = InputValidatorStore.get_validator(identity)
+    validator = namespace.get_validator(identity)
 
     valid_input = {
         'personnel': [
@@ -116,8 +118,9 @@ def test_validate_array_spec():
 
 
 def test_validate_nested_array_spec():
+    namespace = NameStore.get_namespace('flowly.tests.content_root.specifications')
     identity = 'specifications/testing::nested_array_spec==1.0'
-    validator = InputValidatorStore.get_validator(identity)
+    validator = namespace.get_validator(identity)
 
     valid_input = {
         'duty_assignments': [

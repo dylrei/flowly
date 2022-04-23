@@ -36,6 +36,8 @@
 - !RETURN
   message: Thank you for sharing!
   persisted_data:
-    <<: !State *
+    favorite_hat: !State favorite_hat
+    favorite_type_of_pie: !State favorite_type_of_pie
   volatile_data:
-    <<: !Input *
+    current_mood: !Data current_mood
+    current_plans: !Data current_plans

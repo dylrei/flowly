@@ -8,21 +8,18 @@ class InputValidator(object):
         self.identity = identity
         self.spec = loaded_yaml[TagName.INPUT]
 
-    def validate(self, data_node):
+    # todo: need to load !Validators and do something useful with them
+
+    def validate(self, data_node, namespace):
         if isinstance(data_node, dict):
-            return _validate_dict(self.spec, data_node)
+            return _validate_dict(self.spec, data_node, namespace)
         else:
-            return _validate_list(self.spec, data_node)
+            return _validate_list(self.spec, data_node, namespace)
 
-def _validate_dict(spec_part, data_part):
-    from ..stores.input_validation import InputValidatorStore
+def _validate_dict(spec_part, data_part, namespace):
     if 'id' in spec_part:
-        spec_part = InputValidatorStore.get_validator(spec_part['id'])
+        spec_part = namespace.get_validator(spec_part['id'])
 
-    try:
-        [k for k, v in spec_part.items() if v.get(YamlKeyword.REQUIRED)]
-    except:
-        import ipdb; ipdb.set_trace()
     validate_expected_and_required_values(
         expected_values=spec_part.keys(),
         required_values=[k for k, v in spec_part.items() if v.get(YamlKeyword.REQUIRED)],
@@ -36,7 +33,7 @@ def _validate_dict(spec_part, data_part):
         if spec_details[YamlKeyword.DATA_TYPE] == DataType.OBJECT:
             _validate_dict(spec_details, data_value)
         elif spec_details[YamlKeyword.DATA_TYPE] == DataType.ARRAY:
-            _validate_list(spec_details, data_value)
+            _validate_list(spec_details, data_value, namespace)
         else:
             _validate_scalar(spec_details, data_value)
     return True
@@ -64,8 +61,7 @@ def _validate_scalar(spec_part, data_part):
         raise RuntimeError(f'Expected {expected_data_type}, got: {data_part} (type: {type(data_part)})')
 
 
-def _validate_list(spec_part, data_part):
-    from ..stores.input_validation import InputValidatorStore
+def _validate_list(spec_part, data_part, namespace):
     min_size = int_or_none(spec_part.get(YamlKeyword.MIN_SIZE))
     max_size = int_or_none(spec_part.get(YamlKeyword.MAX_SIZE))
     count_elems_provided = len(data_part)
@@ -77,12 +73,12 @@ def _validate_list(spec_part, data_part):
     member_data_type = spec_part.get(YamlKeyword.MEMBER_DATA_TYPE)
     member_spec = spec_part.get(YamlKeyword.MEMBER_SPEC)
     if member_spec is not None and 'id' in member_spec:
-        validator = InputValidatorStore.get_validator(member_spec['id'])
-        _ = [validator.validate(member) for member in data_part]
+        validator = namespace.get_validator(member_spec['id'])
+        _ = [validator.validate(member, namespace) for member in data_part]
     else:
         if member_data_type == DataType.OBJECT:
-            _ = [_validate_dict(member_spec, member) for member in data_part]
+            _ = [_validate_dict(member_spec, member, namespace) for member in data_part]
         elif member_data_type == DataType.ARRAY:
-            _ = [_validate_list(member_spec, member) for member in data_part]
+            _ = [_validate_list(member_spec, member, namespace) for member in data_part]
         else:
             _ = [_validate_scalar({YamlKeyword.DATA_TYPE: member_data_type}, member) for member in data_part]

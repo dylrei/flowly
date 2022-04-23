@@ -6,8 +6,9 @@ from ..constants.payload import PayloadKey
 from ..constants.tags import TagName
 from ..models import Run
 from ..models.state import RunState
+from ..utils.json import preserialize, unfloat
 from ..utils.method import handle_method_or_step_body, render_tag_payload, provide_return, StepReturnData, \
-    load_data_and_state, body_items_after_node
+    load_data_and_state, body_items_after_node, render_tag_values
 
 
 class Data(object):
@@ -16,10 +17,8 @@ class Data(object):
         self.run = run_obj
         self.node = node
         if data is not None:
-            self.latest_return = data.get('latest_return', {})
-            self._value = deepcopy({k: w for k, w in data.items() if k != 'latest_return'})
+            self._value = unfloat(deepcopy(data))
         else:
-            self.latest_return = dict()
             self._value = dict()
 
     @property
@@ -31,12 +30,12 @@ class Data(object):
         return self.run.method
 
     def update(self, new_data):
-        self._value.update(new_data)
+        self._value.update(unfloat(new_data))
 
     def __getitem__(self, item):
-        if item not in self._value:
+        if item not in self.value:
             import ipdb; ipdb.set_trace()
-        return self._value[item]
+        return self.value[item]
 
     def __setitem__(self, key, value):
         raise RuntimeError(f'You may not set values directly on {self.__class__.__name__}, use '
@@ -50,7 +49,7 @@ class State(Data):
     def persist(self):
         RunState.objects.create(
             identity=self.identity,
-            data=self.value,
+            data=preserialize(self.value),
             run=self.run,
             node=self.node
         )
@@ -93,7 +92,7 @@ class MethodExecutor(object):
     def validate_input(self, data):
         pass
 
-    def run(self, data_provided=None, state_identity=None):
+    def run(self, data_provided=None, state_identity=None, namespace=None):
         self.sanity_check(data_provided, state_identity)
         self.validate_input(data_provided)
         run_obj = Run.objects.create(identity=str(uuid.uuid4()), method=self.identity)
@@ -105,23 +104,22 @@ class MethodExecutor(object):
                 next_steps = body_items_after_node(self.body_section, state.node)
             else:
                 # load that method with the state it returned
-                import ipdb; ipdb.set_trace()
-                pass
+                raise NotImplemented('todo')
         else:
             next_steps = self.body_section
-        result = handle_method_or_step_body(next_steps, data, state)
+        result = handle_method_or_step_body(next_steps, data, state, self.namespace)
         if isinstance(result, StepReturnData):
             return_data = {
                 PayloadKey.REQUEST: {
                     PayloadKey.METHOD: self.identity,
-                    PayloadKey.NODE: state.node,
+                    PayloadKey.NAMESPACE: namespace.unique_name,
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: False,
                 },
-                PayloadKey.DATA: result.data,
+                PayloadKey.DATA: preserialize(render_tag_values(result.data, data, state)),
                 PayloadKey.NEXT: {
                     PayloadKey.METHOD: result.resume_method,
-                    PayloadKey.NODE: result.resume_node,
+                    PayloadKey.NAMESPACE: namespace.unique_name,
                     PayloadKey.STATE: result.resume_state,
                 },
             }
@@ -129,16 +127,21 @@ class MethodExecutor(object):
             return_data = {
                 PayloadKey.REQUEST: {
                     PayloadKey.METHOD: self.identity,
-                    PayloadKey.NODE: state.node,
+                    PayloadKey.NAMESPACE: namespace.unique_name,
                     PayloadKey.STATE: state.identity,
                     PayloadKey.COMPLETED: True,
                 },
-                PayloadKey.DATA: render_tag_payload(self.return_section, data, state),
+                PayloadKey.DATA: preserialize(
+                    render_tag_values(
+                        render_tag_payload(self.return_section, data, state, self.namespace),
+                        data, state
+                    ),
+                ),
                 PayloadKey.NEXT: {},
             }
             run_obj.completed = datetime.now(tz=timezone.utc)
             run_obj.save()
-        state.update({'next': return_data['next']})
+        state.update({PayloadKey.NEXT: return_data[PayloadKey.NEXT]})
         return provide_return(return_data, state)
 
 

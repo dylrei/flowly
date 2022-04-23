@@ -1,0 +1,19 @@
+- !META
+  domain: public/examples
+  name: hello_world
+  version: 1.0
+  status: testing
+
+- !INPUT
+  customer:
+    name: string
+    required: true
+
+- !BODY
+  - !Action
+    id: public/examples/hello_world::say_hello==production
+    name: !Data name
+    output>>: !Data response
+
+- !RETURN
+  response: !Data response

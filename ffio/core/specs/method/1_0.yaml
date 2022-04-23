@@ -1,0 +1,14 @@
+- !META
+  domain: core
+  name: method
+  version: 1.0
+  status: development
+
+- !INPUT
+  - input: core/method::meta_section==1.0
+
+  - input: core/method::input_section==1.0
+
+  - input: core/method::body_section==1.0
+
+  - input: core/method::return_section==1.0

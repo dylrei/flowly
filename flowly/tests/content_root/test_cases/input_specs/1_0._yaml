@@ -1,0 +1,26 @@
+- !META
+  domain: test_cases
+  name: input_specs
+  version: 1.0
+  status: testing
+
+
+- !ALIASES
+  # a place to store reusable YAML anchors
+  - .: &array-of-objects
+    data_type: array
+    member_data_type: object
+  - .: &barcoded-material
+    data_type: string
+    required: true
+
+  - .:
+    validators:
+      - !Validator validator_identity
+
+- !INPUT
+  customer:
+    <<: *barcoded-material
+  items:
+    <<: *array-of-objects
+    member_spec: specifications/testing::item_with_price==1.0

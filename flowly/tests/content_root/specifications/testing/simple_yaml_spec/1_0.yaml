@@ -1,6 +1,6 @@
 - !META
   domain: specifications/testing
-  method: simple_yaml_spec
+  name: simple_yaml_spec
   version: 1.0
   status: development
 

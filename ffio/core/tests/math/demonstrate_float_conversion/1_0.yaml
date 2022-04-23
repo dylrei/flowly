@@ -1,0 +1,19 @@
+- !META
+  domain: core/tests/math
+  name: demonstrate_float_conversion
+  version: 1.0
+  status: testing
+
+- !INPUT
+  numbers_to_multiply:
+    data_type: array
+    member_data_type: float
+
+- !BODY
+  - !Action
+    id: core/math::multiply==1.0
+    numbers: !Data numbers_to_multiply
+    output>>: !Data product
+
+- !RETURN
+  product: !Data product

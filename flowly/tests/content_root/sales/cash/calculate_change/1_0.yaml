@@ -7,7 +7,7 @@
 
 - !BODY
   - !Action
-    id: core/math::subtract==1.0
+    id: flowly.tests.content_root.core++math::subtract==1.0
     left: !Data order_total
     right: !Data cash_tendered
     store_results: !Data change_due

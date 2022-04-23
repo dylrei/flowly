@@ -11,13 +11,13 @@
     required: true
     validators:
       - !Validator
-        id: my_lab/security/validators::is_current_user@@production
+        id: my_lab/security/validators::is_current_user==production
   - .: &material-barcode
     data_type: string
     required: true
     validators:
       - !Validator
-        id: my_lab/operations/validators::is_barcode@@production
+        id: my_lab/operations/validators::is_barcode==production
 
 - !INPUT
   source_plate: *material-barcode
@@ -29,7 +29,7 @@
   user: *user-id
 
 - !INPUT
-  id: my_lab/operations/transfers::stamp_transfer_input_spec@@production
+  id: my_lab/operations/transfers::stamp_transfer_input_spec==production
 
 - !BODY
   - !Step
@@ -37,7 +37,7 @@
     description: completely optional free-text information about this step
     body:
       - !Action
-        id: my_lab/operations/transfers::stamp_transfer@@production
+        id: my_lab/operations/transfers::stamp_transfer==production
         source_plate: !Material source_plate
         target_plate: !Material target_plate
         instrument: !Asset liquid_handler
@@ -45,7 +45,7 @@
       - !Data
         source_plate_status: disposed
       - !Action
-        id: my_lab/operations/labware::change_status@@production
+        id: my_lab/operations/labware::change_status==production
         item: !Material source_plate
         new_status: !Data source_plate_status
 
